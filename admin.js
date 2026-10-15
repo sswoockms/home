@@ -38,7 +38,11 @@
   var IMAGE_KEYS = { image: 1, thumb: 1, cover: 1, file: 1, standing: 1, portraits: 1, images: 1 };
 
   var S = window.SITE || {};
-  var st = { user: null, fb: null, draft: null, dirty: false, tab: null, root: null, view: 'site', busy: false };
+  var st = { user: null, fb: null, draft: null, dirty: false, tab: null, root: null, view: 'site', busy: false,
+             preview: window.innerWidth >= 1000, pvMobile: false, pvFrame: null, pvBody: null, pvRoute: '', pvTimer: null };
+  /* 편집 탭 → 미리보기에서 보여줄 화면 */
+  var TAB_ROUTE = { home: '', logo: '', illust: '', menu: '', title: '', works: 'works', oc: 'oc', pair: 'pair',
+                    owner: 'owner', guest: 'guest', __gb: 'guest' };
 
   function $(sel, el) { return (el || document).querySelector(sel); }
   function h(tag, attrs, kids) {
@@ -69,6 +73,58 @@
     st.dirty = true;
     var b = $('#oha-save'); if (b) b.disabled = false;
     var d = $('#oha-dirty'); if (d) d.hidden = false;
+    schedulePreview();
+  }
+
+  /* ---------- 실시간 미리보기 ---------- */
+  function schedulePreview() {
+    if (!st.preview || !st.pvFrame) return;
+    clearTimeout(st.pvTimer);
+    st.pvTimer = setTimeout(function () {
+      try { st.pvFrame.contentWindow.location.reload(); } catch (e) {}
+    }, 600);
+  }
+  function setRoute(r) {
+    st.pvRoute = r || '';
+    var sel = $('#oha-route'); if (sel && sel.value !== st.pvRoute) sel.value = st.pvRoute;
+    if (!st.pvFrame) return;
+    try { st.pvFrame.contentWindow.location.hash = st.pvRoute ? '#' + st.pvRoute : '#'; } catch (e) {}
+  }
+  function layoutPreview() {
+    if (!st.pvFrame || !st.pvBody) return;
+    var w = st.pvMobile ? 390 : 1280;
+    var pw = st.pvBody.clientWidth, ph = st.pvBody.clientHeight;
+    if (!pw || !ph) return;                 /* 아직 화면에 안 나온 상태 → 크기가 잡히면 다시 계산 */
+    var s = Math.min(pw / w, 1);
+    st.pvFrame.style.width = w + 'px';
+    st.pvFrame.style.height = (ph / s) + 'px';
+    st.pvFrame.style.transform = 'scale(' + s + ')';
+    st.pvFrame.style.marginLeft = Math.max(0, (pw - w * s) / 2) + 'px';
+  }
+  function previewPane() {
+    var base = location.href.split('#')[0].split('?')[0];
+    var pane = h('div', { class: 'oha-pv' });
+    var routes = [['', '메인'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['owner', 'Owner'], ['guest', 'Guest']];
+    var oc = (st.draft.oc && st.draft.oc.list) || [], pr = (st.draft.pair && st.draft.pair.list) || [];
+    oc.forEach(function (c) { if (c.id) routes.push(['oc/' + c.id, 'Oc · ' + (c.name || c.id)]); });
+    pr.forEach(function (p) { if (p.id) routes.push(['pair/' + p.id, 'Pair · ' + (p.name || p.id)]); });
+    var sel = h('select', { id: 'oha-route', class: 'oha-in', style: 'width:auto;flex:1;min-width:0' },
+      routes.map(function (r) { return h('option', { value: r[0], text: r[1] }); }));
+    sel.value = st.pvRoute;
+    sel.onchange = function () { setRoute(sel.value); };
+    var mob = h('button', { class: 'oha-btn', type: 'button', text: st.pvMobile ? 'PC 로 보기' : '모바일로 보기' });
+    mob.onclick = function () { st.pvMobile = !st.pvMobile; mob.textContent = st.pvMobile ? 'PC 로 보기' : '모바일로 보기'; layoutPreview(); };
+    var rf = h('button', { class: 'oha-btn', type: 'button', text: '새로고침' });
+    rf.onclick = function () { try { st.pvFrame.contentWindow.location.reload(); } catch (e) {} };
+    var bar = h('div', { class: 'oha-pvbar' }, [h('b', { text: '미리보기' }), sel, mob, rf]);
+    var body = h('div', { class: 'oha-pvbody' });
+    var fr = h('iframe', { title: '사이트 미리보기', src: base + '?preview=1' + (st.pvRoute ? '#' + st.pvRoute : '') });
+    body.appendChild(fr);
+    pane.appendChild(bar); pane.appendChild(body);
+    st.pvFrame = fr; st.pvBody = body;
+    setTimeout(layoutPreview, 0);
+    if (window.ResizeObserver) new ResizeObserver(layoutPreview).observe(body);
+    return pane;
   }
 
   /* ---------- Firebase 연결 (index.html 의 OHFB 공유) ---------- */
@@ -119,6 +175,14 @@
       '.oha-box>summary{cursor:pointer;font-weight:700;display:flex;gap:8px;align-items:center}' +
       '.oha-box>summary .oha-sp{flex:1}.oha-mini{border:1px solid #ccc;background:#fff;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer}' +
       '.oha-add{margin-top:6px}.oha-note{color:#777;font-size:12px;margin:4px 0}' +
+      '.oha-split{display:flex;height:calc(100vh - 58px)}.oha-ed{flex:1 1 46%;min-width:380px;overflow:auto}' +
+      '.oha-split .oha-main{grid-template-columns:140px 1fr;max-width:none;margin:12px;padding:0}' +
+      '.oha-split .oha-nav{top:12px}' +
+      '.oha-pv{flex:1 1 54%;min-width:0;display:flex;flex-direction:column;border-right:1px solid #ccc;background:#e4e4e4}' +
+      '.oha-pvbar{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#fff;border-bottom:1px solid #ddd}' +
+      '.oha-pvbody{flex:1;position:relative;overflow:hidden}' +
+      '.oha-pvbody iframe{position:absolute;left:0;top:0;border:0;background:#fff;transform-origin:0 0;box-shadow:0 0 0 1px #ccc}' +
+      '@media(max-width:999px){.oha-split{flex-direction:column;height:auto}.oha-pv{height:60vh}}' +
       '.oha-menu{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.08)}' +
       '.oha-menu[hidden]{display:none}.oha-menu-item{text-align:left;border:1px solid #e5e5e5;background:#fafafa;border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px}' +
       '.oha-menu-item:hover{border-color:' + point + ';background:#fff}.oha-menu-item small{color:#777}' +
@@ -450,7 +514,10 @@
     }
     keys.concat(['__gb']).forEach(function (k) {
       var b = h('button', { type: 'button', text: k === '__gb' ? '방명록 관리' : (TAB_NAME[k] || k) });
-      b.dataset.k = k; b.onclick = function () { st.tab = k; show(); };
+      b.dataset.k = k; b.onclick = function () {
+        st.tab = k; show();
+        if (st.preview) setRoute(TAB_ROUTE[k] || '');
+      };
       nav.appendChild(b);
     });
     body.appendChild(h('div', { class: 'oha-main' }, [nav, panel]));
@@ -551,7 +618,9 @@
       top.appendChild(h('span', { id: 'oha-dirty', class: 'oha-note', text: '● 저장 안 됨', hidden: 'hidden' }));
       var rs = h('button', { class: 'oha-btn is-bad', type: 'button', text: '기본값으로' }); rs.onclick = reset;
       var sv = h('button', { id: 'oha-save', class: 'oha-btn is-main', type: 'button', text: '저장', disabled: 'disabled' }); sv.onclick = save;
-      top.appendChild(rs); top.appendChild(sv);
+      var pv = h('button', { class: 'oha-btn', type: 'button', text: st.preview ? '미리보기 끄기' : '미리보기 켜기' });
+      pv.onclick = function () { st.preview = !st.preview; draw(); };
+      top.appendChild(pv); top.appendChild(rs); top.appendChild(sv);
     }
     root.appendChild(top);
 
@@ -574,7 +643,15 @@
         st.draft = clone(S);
         Object.keys(SKIP).forEach(function (k) { delete st.draft[k]; });
       }
-      renderEditor(root);
+      if (st.preview) {
+        var ed = h('div', { class: 'oha-ed' });
+        renderEditor(ed);
+        var split = h('div', { class: 'oha-split' }, [previewPane(), ed]);
+        root.appendChild(split);
+      } else {
+        st.pvFrame = null; st.pvBody = null;
+        renderEditor(root);
+      }
     }
     root.appendChild(h('div', { id: 'oha-toast', class: 'oha-toast' }));
   }

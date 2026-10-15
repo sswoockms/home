@@ -49,6 +49,15 @@
     var cfg = (S.firebase && S.firebase.config) || (S.guest && S.guest.firebase && S.guest.firebase.config) || null;
     window.SITE_FB = cfg;
     var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1 };
+    /* 관리자 편집기의 미리보기(iframe) : 부모 편집기에서 편집 중인 값을 그대로 보여줘요 */
+    if (window.parent !== window && /[?&]preview=1/.test(location.search)) {
+      try {
+        var pd = window.parent.OHAdmin && window.parent.OHAdmin._state.draft;
+        if (pd) Object.keys(pd).forEach(function (k) { if (!SKIP[k]) S[k] = JSON.parse(JSON.stringify(pd[k])); });
+        S.music = Object.assign({}, S.music, { autoplay: false });
+      } catch (e) {}
+      return;
+    }
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
     if (cached && cached.data) Object.keys(cached.data).forEach(function (k) { if (!SKIP[k]) S[k] = cached.data[k]; });

@@ -119,6 +119,9 @@
       '.oha-box>summary{cursor:pointer;font-weight:700;display:flex;gap:8px;align-items:center}' +
       '.oha-box>summary .oha-sp{flex:1}.oha-mini{border:1px solid #ccc;background:#fff;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer}' +
       '.oha-add{margin-top:6px}.oha-note{color:#777;font-size:12px;margin:4px 0}' +
+      '.oha-menu{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.08)}' +
+      '.oha-menu[hidden]{display:none}.oha-menu-item{text-align:left;border:1px solid #e5e5e5;background:#fafafa;border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px}' +
+      '.oha-menu-item:hover{border-color:' + point + ';background:#fff}.oha-menu-item small{color:#777}' +
       '.oha-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;z-index:100001;max-width:90vw}' +
       '.oha-toast.is-on{opacity:1;transform:translateX(-50%)}.oha-toast.is-bad{background:#b3261e}' +
       '.oha-login{max-width:420px;margin:12vh auto;background:#fff;border:1px solid #ddd;border-radius:16px;padding:28px;text-align:center}' +
@@ -196,20 +199,167 @@
     return stringEd(val == null ? '' : String(val), set, key, pkey);
   }
 
+  /* ==========================================================
+     기능 추가 메뉴 : 지금은 없앤 기능(AU / 성장 버전, 타임라인, TRPG 로그 …)을
+     필요할 때 다시 꺼내 쓸 수 있게, "+ 추가" 에서 고르는 틀(템플릿) 모음이에요.
+     ========================================================== */
+  function secBlock(title, en, extra) {
+    var o = { title: title, en: en }; Object.keys(extra || {}).forEach(function (k) { o[k] = extra[k]; }); return o;
+  }
+  var LOG_TPL = {
+    title: '시나리오 이름', date: '', system: 'CoC 7th', gm: '', players: '', desc: '', link: '', embed: '',
+    speakers: { '캐릭터 이름': { image: '' }, 'GM': { image: '' } },
+    raw: '# 1장. 시작\n캐릭터 이름: 대사가 들어갑니다.\n> 듣기 판정 (1D100<=50) → 32 성공\nGM: 안쪽에서 발소리가 들립니다.'
+  };
+  var T_PROFILE = { name: '프로필', sections: [
+    secBlock('기본 정보', 'INFORMATION', { rows: [['나이', ''], ['키', ''], ['생일', ''], ['좋아하는 것', ''], ['싫어하는 것', '']] }),
+    secBlock('성격', 'CHARACTER', { text: '' }), secBlock('배경', 'BACKGROUND', { text: '' })] };
+  var T_GALLERY = { name: '갤러리', sections: [{ title: '', en: '', columns: 3, images: [{ image: '', caption: '' }] }] };
+  var T_TIMELINE = { name: '타임라인', timelines: [{ name: '본편', desc: '', events: [
+    { date: '', title: '첫 만남', text: '', size: 3 }, { date: '', title: '사건 이름', text: '', size: 2 }] }] };
+  var T_LOG = { name: '로그', logs: [LOG_TPL] };
+
+  function templatesFor(key, pkey) {
+    var area = st.tab;   /* oc / pair / owner */
+    if (key === 'standing') return [
+      { name: '의상 / 표정 버전', desc: '이미지만 바꿔서 왼쪽 버튼으로 전환', value: { label: '의상', image: '', thumb: '' } },
+      { name: 'AU 버전', desc: '다른 색 · 소개 · 탭까지 따로 적는 버전', value: {
+        label: 'AU', image: '', thumb: '', color: '', tag: 'AU', subtitle: '', desc: '',
+        badge: { image: '', title: 'AU 진영', sub: '', size: 160 },
+        tabs: [{ name: 'AU 설정', sections: [secBlock('세계관', 'WORLD', { text: '' }), secBlock('성격', 'CHARACTER', { text: '' })] }] } },
+      { name: '성장 버전', desc: '능력치와 본문 일부를 바꾼 버전', value: {
+        label: '성장', image: '', thumb: '', tag: '성장 후', subtitle: '',
+        stats: [{ name: '근력', value: 50 }, { name: '민첩', value: 50 }, { name: '지능', value: 50 }, { name: '매력', value: 50 }, { name: '운', value: 50 }],
+        tabs: [clone(T_PROFILE)] } }
+    ];
+    if (key === 'standings') return [
+      { name: '기본 스탠딩', desc: '', value: { label: '기본', image: '' } },
+      { name: 'AU', desc: '뒤 필기체 글자와 색도 바꾸는 버전', value: { label: 'AU', image: '', script: 'AU Name', color: '' } },
+      { name: '성장', desc: '크기를 다르게', value: { label: '성장', image: '', size: 900 } },
+      { name: '표정 차분', desc: '', value: { label: '표정 차분', image: '' } }
+    ];
+    if (key === 'tabs') {
+      var base = [
+        { name: '프로필 탭', desc: '기본 정보 표 + 성격 + 배경', value: clone(T_PROFILE) },
+        { name: '관계 탭 (자동)', desc: '페어 / 같은 진영을 자동으로 보여줘요', value: { name: '관계', auto: true, sections: [] } },
+        { name: '비밀설정 탭', desc: '', value: { name: '비밀설정', sections: [secBlock('비밀설정', 'SECRET', { text: '' })] } },
+        { name: '갤러리 탭', desc: '이미지 · 커미션 백업', value: clone(T_GALLERY) }
+      ];
+      if (area === 'pair') base.push(
+        { name: '타임라인 탭', desc: '가로 타임라인 (본편 / AU 여러 개 가능)', value: clone(T_TIMELINE) },
+        { name: 'TRPG 로그 탭', desc: '세션별 로그 백업 (말풍선)', value: clone(T_LOG) });
+      return base;
+    }
+    if (key === 'timelines') return [
+      { name: '본편 타임라인', desc: '', value: { name: '본편', desc: '', events: [{ date: '', title: '', text: '', size: 2 }] } },
+      { name: 'AU 타임라인', desc: '', value: { name: 'AU', desc: '', events: [{ date: '', title: '', text: '', size: 2 }] } }
+    ];
+    if (key === 'logs') return [{ name: 'TRPG 로그 한 세션', desc: '말풍선 / 장면 / 판정을 붙여 넣는 형식', value: clone(LOG_TPL) }];
+    if (key === 'stats') return [{ name: '능력치 막대', desc: '0 ~ 100', value: { name: '', value: 50 } }];
+    if (key === 'members') {
+      var ocs = (st.draft.oc && st.draft.oc.list) || [];
+      var out = ocs.map(function (c) { return { name: '내 OC : ' + (c.name || c.id), desc: 'id = ' + c.id + ' (OC 와 자동 연동)', value: c.id }; });
+      out.push({ name: '상대 오너 캐릭터', desc: '내 OC 목록에 없는 캐릭터', value: { name: '', en: '', thumb: '', link: '' } });
+      return out;
+    }
+    if (key === 'list' && area === 'oc') return [{ name: '새 캐릭터', desc: '프로필 · 관계 · 갤러리 탭 포함', value: {
+      id: '', name: '', en: '', tag: '', subtitle: '', desc: '', thumb: '', standingSize: 920, color: '',
+      standing: [{ label: '기본', image: '', thumb: '' }], stats: [], faction: '',
+      badge: { image: '', title: '', sub: '', size: 160 },
+      tabs: [clone(T_PROFILE), { name: '관계', auto: true, sections: [] }, clone(T_GALLERY)] } }];
+    if (key === 'list' && area === 'pair') return [{ name: '새 페어', desc: '멤버는 OC id 로 연결', value: {
+      id: '', name: '', en: '', thumb: '', relation: '', color: '', members: [], portraits: [],
+      standings: [{ label: '기본', image: '' }], script: '', desc: '',
+      stamp: { title: '', text: '' }, date: { big: '', sub: '', small: '' }, tabs: [clone(T_GALLERY)] } }];
+    return [];
+  }
+
+  /* 칸이 없는 항목을 나중에 다시 꺼내 쓰는 "+ 항목 추가" 목록 */
+  var STAND_BADGE = { image: '', title: '', sub: '', size: 160 };
+  var OPTIONAL = {
+    standing: { tag: '', name: '', en: '', subtitle: '', desc: '', stats: [], badge: STAND_BADGE, tabs: [], color: '', theme: { background: '' }, standingSize: 920 },
+    standings: { portraits: [], script: '', color: '', theme: { background: '' }, size: 860 },
+    tabs: { auto: true, sections: [], timelines: [], logs: [] },
+    logs: { embed: '', link: '', desc: '', speakers: { '캐릭터 이름': { image: '' } }, raw: '' },
+    ocitem: { color: '', theme: { background: '' }, faction: '', badge: STAND_BADGE, stats: [], standingSize: 920, thumb: '' }
+  };
+  Object.assign(LABEL, { auto: '관계 자동 목록', timelines: '타임라인', logs: 'TRPG 로그', system: '룰', gm: 'GM',
+    players: '참가자', embed: '로그 파일(html)', raw: '로그 글', speakers: '말하는 사람', side: '말풍선 위치',
+    script: '뒤 필기체 글자', stamp: '도장', label: '버튼 이름', scriptFont: '필기체' });
+
   function objectEd(obj, key) {
     var box = h('div');
-    Object.keys(obj).forEach(function (k) {
-      var v = obj[k];
-      var complex = v && typeof v === 'object';
-      var ed = valueEd(v, function (nv) { obj[k] = nv; }, k, key);
-      if (complex) {
-        var d = h('details', { class: 'oha-box' }, [h('summary', { text: LABEL[k] || k }), ed]);
-        if (!Array.isArray(v)) d.open = false;
-        box.appendChild(d);
-      } else {
-        box.appendChild(h('div', { class: 'oha-row' }, [h('div', { class: 'oha-lab', text: LABEL[k] || k }), ed]));
+    var optKey = (key === 'list' && st.tab === 'oc') ? 'ocitem' : key;
+    function draw() {
+      box.innerHTML = '';
+      Object.keys(obj).forEach(function (k) {
+        var v = obj[k];
+        if (k === 'speakers' && v && typeof v === 'object' && !Array.isArray(v)) {
+          var sd = h('details', { class: 'oha-box' }, [h('summary', { text: LABEL[k] }), speakersEd(v)]);
+          box.appendChild(sd); return;
+        }
+        var complex = v && typeof v === 'object';
+        var ed = valueEd(v, function (nv) { obj[k] = nv; }, k, key);
+        if (complex) {
+          var d = h('details', { class: 'oha-box' }, [h('summary', { text: LABEL[k] || k }), ed]);
+          if (!Array.isArray(v)) d.open = false;
+          box.appendChild(d);
+        } else {
+          box.appendChild(h('div', { class: 'oha-row' }, [h('div', { class: 'oha-lab', text: LABEL[k] || k }), ed]));
+        }
+      });
+      var opt = OPTIONAL[optKey];
+      if (opt) {
+        var missing = Object.keys(opt).filter(function (k) { return !(k in obj); });
+        if (missing.length) {
+          var sel = h('select', { class: 'oha-in', style: 'width:auto;display:inline-block' },
+            [h('option', { value: '', text: '+ 항목 추가…' })].concat(missing.map(function (k) {
+              return h('option', { value: k, text: LABEL[k] || k });
+            })));
+          sel.onchange = function () {
+            if (!sel.value) return;
+            obj[sel.value] = clone(opt[sel.value]); touch(); draw();
+          };
+          box.appendChild(h('div', { class: 'oha-add' }, [sel]));
+        }
       }
-    });
+    }
+    draw();
+    return box;
+  }
+
+  /* 말하는 사람 : 이름(칸 이름)을 직접 고칠 수 있어야 해서 따로 */
+  function speakersEd(obj) {
+    var box = h('div');
+    function draw() {
+      box.innerHTML = '';
+      Object.keys(obj).forEach(function (name) {
+        var v = obj[name] || (obj[name] = { image: '' });
+        var nm = h('input', { class: 'oha-in', type: 'text', placeholder: '이름 (로그 글의 이름과 똑같이)' }); nm.value = name;
+        nm.onchange = function () {
+          var nn = nm.value.trim(); if (!nn || nn === name || obj[nn]) { nm.value = name; return; }
+          var next = {}; Object.keys(obj).forEach(function (k) { next[k === name ? nn : k] = obj[k]; });
+          Object.keys(obj).forEach(function (k) { delete obj[k]; }); Object.assign(obj, next); touch(); draw();
+        };
+        var rm = h('button', { class: 'oha-mini', type: 'button', text: '✕' });
+        rm.onclick = function () { delete obj[name]; touch(); draw(); };
+        var side = h('select', { class: 'oha-in', style: 'width:auto' }, [
+          h('option', { value: '', text: '왼쪽' }), h('option', { value: 'right', text: '오른쪽' })]);
+        side.value = v.side || '';
+        side.onchange = function () { if (side.value) v.side = side.value; else delete v.side; touch(); };
+        box.appendChild(h('div', { class: 'oha-box' }, [
+          h('div', { class: 'oha-img' }, [nm, side, rm]),
+          h('div', { class: 'oha-row' }, [h('div', { class: 'oha-lab', text: '프사 이미지' }), valueEd(v.image || '', function (nv) { v.image = nv; }, 'image', 'speakers')])
+        ]));
+      });
+      var add = h('button', { class: 'oha-btn oha-add', type: 'button', text: '+ 말하는 사람 추가' });
+      add.onclick = function () {
+        var n = '새 인물', i = 1; while (obj[n]) n = '새 인물 ' + (++i);
+        obj[n] = { image: '' }; touch(); draw();
+      };
+      box.appendChild(add);
+    }
+    draw();
     return box;
   }
 
@@ -243,12 +393,28 @@
           box.appendChild(d);
         }
       });
-      var add = h('button', { class: 'oha-btn oha-add', type: 'button', text: '+ 추가' });
+      var tpls = templatesFor(key, pkey);
+      var add = h('button', { class: 'oha-btn oha-add', type: 'button', text: tpls.length ? '+ 추가 ▾' : '+ 추가' });
+      var menu = h('div', { class: 'oha-menu' }); menu.hidden = true;
+      function push(v) { arr.push(v); touch(); menu.hidden = true; draw(); }
       add.onclick = function () {
-        var tpl = arr.length ? blank(arr[arr.length - 1]) : '';
-        arr.push(tpl); touch(); draw();
+        if (!tpls.length) { push(arr.length ? blank(arr[arr.length - 1]) : ''); return; }
+        if (!menu.hidden) { menu.hidden = true; return; }
+        menu.innerHTML = '';
+        tpls.forEach(function (t) {
+          var b = h('button', { class: 'oha-menu-item', type: 'button' }, [h('b', { text: t.name }), t.desc ? h('small', { text: t.desc }) : null]);
+          b.onclick = function () { push(clone(t.value)); };
+          menu.appendChild(b);
+        });
+        if (arr.length && typeof arr[arr.length - 1] === 'object') {
+          var bl = h('button', { class: 'oha-menu-item', type: 'button' }, [h('b', { text: '마지막 항목과 같은 빈 칸' })]);
+          bl.onclick = function () { push(blank(arr[arr.length - 1])); };
+          menu.appendChild(bl);
+        }
+        menu.hidden = false;
       };
       box.appendChild(add);
+      box.appendChild(menu);
     }
     draw();
     return box;

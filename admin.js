@@ -39,7 +39,7 @@
 
   var S = window.SITE || {};
   var st = { user: null, fb: null, draft: null, dirty: false, tab: null, root: null, view: 'site', busy: false,
-             preview: window.innerWidth >= 1000, pvMobile: false, pvFrame: null, pvBody: null, pvRoute: '', pvTimer: null };
+             preview: window.innerWidth >= 1000, pvMobile: false, pvFrame: null, pvBody: null, pvRoute: '', pvTimer: null, pvN: 0 };
   /* 편집 탭 → 미리보기에서 보여줄 화면 */
   var TAB_ROUTE = { home: '', logo: '', illust: '', menu: '', title: '', works: 'works', oc: 'oc', pair: 'pair',
                     owner: 'owner', guest: 'guest', __gb: 'guest' };
@@ -77,12 +77,19 @@
   }
 
   /* ---------- 실시간 미리보기 ---------- */
+  function pvReload() {
+    try {
+      var w = st.pvFrame.contentWindow, u = new URL(w.location.href);
+      u.searchParams.set('r', String(++st.pvN));
+      w.location.replace(u.toString());
+    } catch (e) {}
+  }
   function schedulePreview() {
     if (!st.preview || !st.pvFrame) return;
     clearTimeout(st.pvTimer);
     st.pvTimer = setTimeout(function () {
-      try { st.pvFrame.contentWindow.location.reload(); } catch (e) {}
-    }, 600);
+      pvReload();
+    }, 900);
   }
   function setRoute(r) {
     st.pvRoute = r || '';
@@ -115,7 +122,7 @@
     var mob = h('button', { class: 'oha-btn', type: 'button', text: st.pvMobile ? 'PC 로 보기' : '모바일로 보기' });
     mob.onclick = function () { st.pvMobile = !st.pvMobile; mob.textContent = st.pvMobile ? 'PC 로 보기' : '모바일로 보기'; layoutPreview(); };
     var rf = h('button', { class: 'oha-btn', type: 'button', text: '새로고침' });
-    rf.onclick = function () { try { st.pvFrame.contentWindow.location.reload(); } catch (e) {} };
+    rf.onclick = function () { pvReload(); };
     var bar = h('div', { class: 'oha-pvbar' }, [h('b', { text: '미리보기' }), sel, mob, rf]);
     var body = h('div', { class: 'oha-pvbody' });
     var fr = h('iframe', { title: '사이트 미리보기', src: base + '?preview=1' + (st.pvRoute ? '#' + st.pvRoute : '') });
@@ -207,7 +214,8 @@
     return fb().then(function (c) {
       var name = Date.now() + '-' + file.name.replace(/[^\w.\-]/g, '_');
       var r = c.store.ref(c.sg, 'uploads/' + name);
-      return c.store.uploadBytes(r, file, { contentType: file.type }).then(function () {
+      /* 파일 이름에 시간이 붙어 매번 새 이름이라, 브라우저가 1년 동안 다시 받지 않게 캐시 설정 */
+      return c.store.uploadBytes(r, file, { contentType: file.type, cacheControl: 'public, max-age=31536000, immutable' }).then(function () {
         return c.store.getDownloadURL(r);
       });
     });

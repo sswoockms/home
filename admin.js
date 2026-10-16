@@ -175,14 +175,18 @@
       '.oha-box>summary{cursor:pointer;font-weight:700;display:flex;gap:8px;align-items:center}' +
       '.oha-box>summary .oha-sp{flex:1}.oha-mini{border:1px solid #ccc;background:#fff;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer}' +
       '.oha-add{margin-top:6px}.oha-note{color:#777;font-size:12px;margin:4px 0}' +
-      '.oha-split{display:flex;height:calc(100vh - 58px)}.oha-ed{flex:1 1 46%;min-width:380px;overflow:auto}' +
+      '.oha-nav{max-height:calc(100vh - 90px);overflow:auto}' +
+      '#oha.is-split{display:flex;flex-direction:column;overflow:hidden}' +
+      '#oha.is-split .oha-top{position:relative;flex:none}' +
+      '.oha-split{display:flex;flex:1 1 auto;min-height:0}.oha-ed{flex:1 1 46%;min-width:380px;min-height:0;overflow:auto}' +
       '.oha-split .oha-main{grid-template-columns:140px 1fr;max-width:none;margin:12px;padding:0}' +
-      '.oha-split .oha-nav{top:12px}' +
+      '.oha-split .oha-nav{top:12px;max-height:calc(100vh - 150px);overflow:auto}' +
       '.oha-pv{flex:1 1 54%;min-width:0;display:flex;flex-direction:column;border-right:1px solid #ccc;background:#e4e4e4}' +
       '.oha-pvbar{display:flex;gap:8px;align-items:center;padding:8px 10px;background:#fff;border-bottom:1px solid #ddd}' +
       '.oha-pvbody{flex:1;position:relative;overflow:hidden}' +
       '.oha-pvbody iframe{position:absolute;left:0;top:0;border:0;background:#fff;transform-origin:0 0;box-shadow:0 0 0 1px #ccc}' +
-      '@media(max-width:999px){.oha-split{flex-direction:column;height:auto}.oha-pv{height:60vh}}' +
+      '@media(max-width:999px){#oha.is-split{display:block;overflow:auto}#oha.is-split .oha-top{position:sticky}' +
+      '.oha-split{flex-direction:column;height:auto}.oha-pv{height:60vh}.oha-ed{overflow:visible}.oha-split .oha-nav{max-height:none}}' +
       '.oha-menu{display:flex;flex-direction:column;gap:4px;margin-top:6px;padding:8px;border:1px solid #ddd;border-radius:10px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.08)}' +
       '.oha-menu[hidden]{display:none}.oha-menu-item{text-align:left;border:1px solid #e5e5e5;background:#fafafa;border-radius:8px;padding:8px 10px;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:2px}' +
       '.oha-menu-item:hover{border-color:' + point + ';background:#fff}.oha-menu-item small{color:#777}' +
@@ -654,6 +658,7 @@
       }
     }
     root.appendChild(h('div', { id: 'oha-toast', class: 'oha-toast' }));
+    root.classList.toggle('is-split', !!(st.preview && isAdmin()));
   }
 
   function mount() {

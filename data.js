@@ -309,12 +309,12 @@ window.SITE = {
               {
                 "title": "",
                 "en": "",
-                "columns": 3,
+                "columns": 0,
                 "images": [
-                  {
-                    "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792071169299-026______.png?alt=media&token=128c3f04-2dec-47d8-90df-30c7f1867e93",
-                    "caption": "@Myamm_PT"
-                  }
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501342438-026______.png?alt=media&token=8fb7f883-b758-467d-8935-b70847f5a7c5",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501346035-Illustration150.png?alt=media&token=2408e151-d742-4ed1-a8a5-ed763c6663b7",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501348605-Nya________.png?alt=media&token=e675f18b-6a31-435e-a04a-39fe25317257",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501372827-__.jpg?alt=media&token=cda8da2e-ba18-4c55-b0b9-12009d13bbdb"
                 ]
               }
             ]
@@ -673,12 +673,47 @@ window.SITE = {
               {
                 "title": "",
                 "en": "",
+                "columns": 0,
+                "images": [
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501195266-_______.jpg?alt=media&token=fd48c99b-e340-4bac-a5a7-3391c1ebeb9a",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501208116-_______2____.png?alt=media&token=81dcb6e2-fffa-4aab-9265-072a2f682cac",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501199065-___1027.png?alt=media&token=a2bad2c5-f4e3-43d4-ab50-838595810f25",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501201985-___-___1.jpg?alt=media&token=bb23f360-4828-4fb9-a653-1ac351b94f25",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501204825-____259.png?alt=media&token=10ea2391-5944-49ee-be8f-47071dca4b7d",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501211531-_____20261012_4__1_.png?alt=media&token=5f223c04-c5fa-46c9-9eba-80d4218079e0",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501227646-___.jpg?alt=media&token=11d05408-ed5f-4248-b0ea-9abd4b6f7adb",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501229789-____2____.jpg?alt=media&token=989c6d47-33b9-4c2d-a24f-08c66ff0b67f",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501232816-_____nya_.png?alt=media&token=48efc9e4-1a0f-4189-8479-4b20bf62d46c",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501236038-14.png?alt=media&token=afe6ac2a-67a3-4d78-b707-f06570329c15",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501243991-20260916-4.png?alt=media&token=43a60b7f-6bff-40b2-be26-20a4c8e9e34a",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501245929-20260916-5__2_.png?alt=media&token=a8ad878d-c517-48b8-9608-5787c353b94b",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501250603-___.png?alt=media&token=84249143-85f6-449e-b837-3ac9a16a90be",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501253646-halloween__1_.gif?alt=media&token=cf27af46-6010-4585-a912-159122e502f4",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501257305-____________.png?alt=media&token=37953b5c-b7e3-4462-a481-7e0cd83ef754",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501260859-____2_____.png?alt=media&token=6b706f81-fe25-4ccd-aa41-c1ef503a3996",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501271510-_______.png?alt=media&token=3993eb48-ecec-4914-9a7c-ac17b285f2b4"
+                ]
+              },
+              {
+                "title": "AU",
+                "en": "",
                 "columns": 3,
                 "images": [
-                  {
-                    "image": "",
-                    "caption": "그림 설명"
-                  }
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501040905-20261003-4__1_.png?alt=media&token=2ebfa3b6-ce48-462a-a52f-2c0a4930e76a",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501048209-20261009.png?alt=media&token=d43b259d-fff2-4c2a-8e91-df9c635bc1fb",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501068854-________________.png?alt=media&token=a17aca7c-22e4-4b4e-8d4e-be15085790e1",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501144417-20261014.png?alt=media&token=68814e5b-6ff7-4c39-9cf3-3c8f5cf7c522",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501149228-____2.png?alt=media&token=7bc1cff6-d23d-498a-ba6d-738506bbf275"
+                ]
+              },
+              {
+                "title": "뇨타",
+                "en": "",
+                "columns": 3,
+                "images": [
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501128530-_____20261109__1_.png?alt=media&token=b111bbab-546b-49af-852a-9aeaedd3a683",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501132965-_____20261110.png?alt=media&token=92327e9c-4f70-4b47-b74e-c0922ec7e6f1",
+                  "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794501135816-__7____.png?alt=media&token=94251212-2f65-494a-b26f-e93746e0c6f9"
                 ]
               }
             ]
@@ -816,23 +851,23 @@ window.SITE = {
               ],
               [
                 "주 활동",
-                "바이브코딩, 소비러"
+                "OC, 게임, 바이브 코딩"
               ],
               [
                 "연락",
-                "DM, Discord 선호"
+                "카톡≥DM>디스코드"
               ]
             ]
           },
           {
             "title": "좋아하는 것",
             "en": "LIKE",
-            "text": "좋아하는 것들이 들어갑니다."
+            "text": "1차 ≫ 로판, BL\n2차 ≫ FF14, 오버워치, 남성향 라노벨류"
           },
           {
             "title": "주의사항",
             "en": "NOTICE",
-            "text": "지뢰, 부탁드리는 점 등이 들어갑니다."
+            "text": "탐라 피곤하게 만드시는 분(매일매일 야차, 뜨감유입),\n고등학생 미만, 겹오시 견제, 미성년자 성인물 소비"
           }
         ]
       }

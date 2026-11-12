@@ -13,11 +13,11 @@
   var VER = (window.SITE && window.SITE.firebaseSdk) || '13.0.0';
   var BASE = 'https://www.gstatic.com/firebasejs/' + VER + '/';
   var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1, remote: 1 };      /* 편집기에서 건드리지 않는 항목 */
-  var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'works', 'oc', 'pair', 'owner', 'guest', 'log',
-               'music', 'calendar', 'colors', 'bgImage', 'mobileWidth'];
+  var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'owner', 'works', 'oc', 'pair', 'log', 'guest',
+               'calendar', 'music', 'colors', 'bgImage', 'mobileWidth'];
   var TAB_NAME = {
     title: '탭 제목', home: '메인 소개', logo: '로고', illust: '메인 일러스트', menu: '메뉴',
-    works: 'Works', oc: 'Oc', pair: 'Pair', owner: 'About me', guest: 'Guest 안내', log: 'Log',
+    works: 'Works', oc: 'Oc', pair: 'Pair', owner: 'Owner', guest: 'Guest 안내', log: 'Log',
     music: '음악', calendar: '캘린더', colors: '색상', bgImage: '바탕 이미지', mobileWidth: '모바일 기준'
   };
   var LABEL = {
@@ -111,7 +111,7 @@
   function previewPane() {
     var base = location.href.split('#')[0].split('?')[0];
     var pane = h('div', { class: 'oha-pv' });
-    var routes = [['', '메인'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['owner', 'About me'], ['guest', 'Guest'], ['calendar', 'Calendar'], ['log', 'Log 목록']];
+    var routes = [['', '메인'], ['owner', 'Owner'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['log', 'Log 목록'], ['guest', 'Guest'], ['calendar', 'Calendar']];
     var oc = (st.draft.oc && st.draft.oc.list) || [], pr = (st.draft.pair && st.draft.pair.list) || [];
     oc.forEach(function (c) { if (c.id) routes.push(['oc/' + c.id, 'Oc · ' + (c.name || c.id)]); });
     pr.forEach(function (p) { if (p.id) routes.push(['pair/' + p.id, 'Pair · ' + (p.name || p.id)]); });
@@ -456,7 +456,7 @@
     shape: '사진 모양', namePlaceholder: '이름 칸 안내', messagePlaceholder: '내용 칸 안내', sendText: '보내기 버튼',
     emptyText: '글이 없을 때', download: '다운로드', value: '값', big: '큰 글자', sub: '작은 글자', small: '아주 작은 글자',
     background: '바탕색', backgroundTop: '위쪽 바탕색', logo: '로고', player: '뮤직 플레이어', pages: '화면별 색',
-    all: '전체', oc: 'Oc', pair: 'Pair', owner: 'About me', guest: 'Guest', accent: '강조색', accentText: '강조색 위 글자',
+    all: '전체', oc: 'Oc', pair: 'Pair', owner: 'Owner', guest: 'Guest', accent: '강조색', accentText: '강조색 위 글자',
     card: '카드 바탕', line: '선', soft: '옅은 바탕', menuText: '메뉴 글자', menuHover: '메뉴 올렸을 때',
     menuNumber: '메뉴 번호', menuLine: '메뉴 점선', frameBackground: '액자 안쪽', frameBorder: '액자 테두리',
     frameShadow: '액자 그림자', placeholder: '자리 표시 상자', placeholderText: '자리 표시 글자', objectShadow: '오브젝트 그림자',

@@ -142,8 +142,12 @@ window.SITE = {
   },
   "menu": [
     {
-      "name": "About me",
+      "name": "Owner",
       "link": "#owner"
+    },
+    {
+      "name": "Works",
+      "link": "#works"
     },
     {
       "name": "Oc",
@@ -154,20 +158,16 @@ window.SITE = {
       "link": "#pair"
     },
     {
-      "name": "Works",
-      "link": "#works"
-    },
-    {
-      "name": "Calendar",
-      "link": "#calendar"
-    },
-    {
       "name": "Log",
       "link": "#log"
     },
     {
       "name": "Guest",
       "link": "#guest"
+    },
+    {
+      "name": "Calendar",
+      "link": "#calendar"
     }
   ],
   "music": {
@@ -779,7 +779,7 @@ window.SITE = {
     ]
   },
   "owner": {
-    "title": "About me",
+    "title": "Owner",
     "subtitle": "About the owner",
     "profile": {
       "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792072573046-026______.png?alt=media&token=ad12e1b1-f63d-42b4-b9b6-6e356d9f86d1",

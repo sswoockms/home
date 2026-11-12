@@ -189,6 +189,7 @@
       '.oha-box>summary{cursor:pointer;font-weight:700;display:flex;gap:8px;align-items:center}' +
       '.oha-box>summary .oha-sp{flex:1}.oha-mini{border:1px solid #ccc;background:#fff;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer}' +
       '.oha-img .oha-btn,.oha-img .oha-mini{flex:none;white-space:nowrap}' +
+      '.oha-shot{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:1px dashed #ddd}' +
       '.oha-crumbs{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0 0 12px;font-size:13px}' +
       '.oha-crumb{border:0;background:none;padding:3px 6px;cursor:pointer;color:#777;font:inherit;border-radius:6px}' +
       '.oha-crumb:hover{background:#eee}.oha-crumb.is-here{color:#222;font-weight:700;cursor:default;background:none}' +
@@ -624,7 +625,20 @@
           rm.onclick = function (e) { e.stopPropagation(); if (confirm('이 항목을 지울까요?')) { arr.splice(i, 1); touch(); draw(); } };
           return [up, dn, rm];
         };
-        if (isPrim(item)) {
+        var isShot = key === 'images' && (typeof item === 'string' || (item && !Array.isArray(item) && typeof item.image === 'string'));
+        if (isShot) {
+          var shot = typeof item === 'string' ? { image: item, caption: '' } : item;
+          var keep = function () {
+            arr[i] = (typeof item === 'string' && !shot.caption) ? shot.image : shot;
+          };
+          var pic = stringEd(shot.image, function (nv) { shot.image = nv; keep(); }, 'image', 'images');
+          var cap = h('input', { class: 'oha-in', type: 'text', placeholder: '이미지 내용 (커미션주 · 출처 등)' });
+          cap.value = shot.caption || '';
+          cap.oninput = function () { shot.caption = cap.value; keep(); touch(); };
+          box.appendChild(h('div', { class: 'oha-shot' }, [
+            h('div', { class: 'oha-img' }, [h('div', { style: 'flex:1;min-width:0' }, [pic])].concat(ctl())),
+            cap]));
+        } else if (isPrim(item)) {
           var ed = valueEd(item, function (nv) { arr[i] = nv; }, key, key);
           box.appendChild(h('div', { class: 'oha-img' }, [h('div', { style: 'flex:1' }, [ed])].concat(ctl())));
         } else if (isRow(item)) {

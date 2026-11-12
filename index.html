@@ -58,6 +58,7 @@
       } catch (e) {}
       return;
     }
+    if (S.remote === false) return;   /* data.js 정본 모드 : Firestore 덮어쓰기/캐시를 쓰지 않아요 */
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
     if (cached && cached.data) Object.keys(cached.data).forEach(function (k) { if (!SKIP[k]) S[k] = cached.data[k]; });

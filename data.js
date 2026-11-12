@@ -61,6 +61,13 @@ window.SITE = {
   /* 관리자 편집기(#admin) : 이 계정만 편집 / 저장할 수 있어요. 규칙(firestore.rules, storage.rules)의 이메일과 같게 */
   admin: { email: "swoonqx@gmail.com" },
 
+  /* 🔁 내용 반영 방식 (편집 방식)
+     true  : 편집기의 "임시 저장"(Firestore)이 data.js 위에 덮어써져요 (저장 즉시, 새로고침하면 반영).
+     false : 이 data.js 가 정본이에요. 편집기의 "data.js 내보내기" 로 파일을 받아
+             GitHub 저장소에 올리면(커밋) Vercel 이 자동 배포해요. (덮어쓰기·캐시 안 씀 → 버전관리·깔끔)
+     ※ false 로 바꾸기 전에, 편집기에서 "data.js 내보내기" 로 지금 내용을 먼저 저장소에 올려 두세요. */
+  remote: true,
+
   /* 📱 화면 너비가 이 숫자(px) 이하면 모바일 배치(세로로 쌓기)로 바뀌어요.
         휴대폰은 보통 360~430 / 세로 태블릿 768~820 */
   mobileWidth: 820,

@@ -12,7 +12,7 @@
 
   var VER = (window.SITE && window.SITE.firebaseSdk) || '13.0.0';
   var BASE = 'https://www.gstatic.com/firebasejs/' + VER + '/';
-  var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1 };      /* 편집기에서 건드리지 않는 항목 */
+  var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1, remote: 1 };      /* 편집기에서 건드리지 않는 항목 */
   var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'works', 'oc', 'pair', 'owner', 'guest',
                'music', 'calendar', 'colors', 'bgImage', 'mobileWidth'];
   var TAB_NAME = {
@@ -608,6 +608,29 @@
       }).catch(function (e) { toast('되돌리지 못했어요: ' + (e.message || e), true); });
   }
 
+  /* ---------- data.js 내보내기 (정본 = GitHub) ---------- */
+  function exportDataJs() {
+    if (!isAdmin()) return toast('관리자만 내보낼 수 있어요.', true);
+    var full = {};
+    if (S.admin) full.admin = clone(S.admin);
+    Object.keys(SKIP).forEach(function (k) { if (k !== 'admin' && (k in S)) full[k] = clone(S[k]); });
+    Object.keys(st.draft).forEach(function (k) { if (!SKIP[k]) full[k] = clone(st.draft[k]); });
+    var header = '/* data.js — 사이트 내용\n' +
+      '   편집기의 "data.js 내보내기" 로 뽑은 파일이에요.\n' +
+      '   이 파일을 GitHub 저장소에 올리면(커밋) Vercel 이 자동 배포해 사이트에 반영돼요.\n' +
+      '   remote: false 로 두면 이 data.js 가 정본으로 쓰여요. */\n\n';
+    var text = header + 'window.SITE = ' + JSON.stringify(full, null, 2) + ';\n';
+    try {
+      var blob = new Blob([text], { type: 'text/javascript;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = h('a', { href: url, download: 'data.js' });
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
+    } catch (e) { return toast('내보내지 못했어요: ' + (e.message || e), true); }
+    try { if (navigator.clipboard) navigator.clipboard.writeText(text); } catch (e) {}
+    toast('data.js 를 내려받았어요. GitHub 에 올리면(커밋) 반영돼요.');
+  }
+
   /* ---------- 로그인 화면 / 전체 ---------- */
   function draw() {
     var root = st.root; root.innerHTML = '';
@@ -629,10 +652,11 @@
     if (isAdmin()) {
       top.appendChild(h('span', { id: 'oha-dirty', class: 'oha-note', text: '● 저장 안 됨', hidden: 'hidden' }));
       var rs = h('button', { class: 'oha-btn is-bad', type: 'button', text: '기본값으로' }); rs.onclick = reset;
-      var sv = h('button', { id: 'oha-save', class: 'oha-btn is-main', type: 'button', text: '저장', disabled: 'disabled' }); sv.onclick = save;
+      var sv = h('button', { id: 'oha-save', class: 'oha-btn', type: 'button', text: '임시 저장', disabled: 'disabled' }); sv.onclick = save;
+      var ex = h('button', { class: 'oha-btn is-main', type: 'button', text: 'data.js 내보내기' }); ex.onclick = exportDataJs;
       var pv = h('button', { class: 'oha-btn', type: 'button', text: st.preview ? '미리보기 끄기' : '미리보기 켜기' });
       pv.onclick = function () { st.preview = !st.preview; draw(); };
-      top.appendChild(pv); top.appendChild(rs); top.appendChild(sv);
+      top.appendChild(pv); top.appendChild(rs); top.appendChild(sv); top.appendChild(ex);
     }
     root.appendChild(top);
 

@@ -142,8 +142,8 @@ window.SITE = {
   },
   "menu": [
     {
-      "name": "Works",
-      "link": "#works"
+      "name": "About me",
+      "link": "#owner"
     },
     {
       "name": "Oc",
@@ -154,12 +154,8 @@ window.SITE = {
       "link": "#pair"
     },
     {
-      "name": "Owner",
-      "link": "#owner"
-    },
-    {
-      "name": "Guest",
-      "link": "#guest"
+      "name": "Works",
+      "link": "#works"
     },
     {
       "name": "Calendar",
@@ -168,6 +164,10 @@ window.SITE = {
     {
       "name": "Log",
       "link": "#log"
+    },
+    {
+      "name": "Guest",
+      "link": "#guest"
     }
   ],
   "music": {
@@ -779,7 +779,7 @@ window.SITE = {
     ]
   },
   "owner": {
-    "title": "Owner",
+    "title": "About me",
     "subtitle": "About the owner",
     "profile": {
       "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792072573046-026______.png?alt=media&token=ad12e1b1-f63d-42b4-b9b6-6e356d9f86d1",
@@ -938,7 +938,7 @@ window.SITE = {
     ],
     "categories": [
       {
-        "name": "웹사이트",
+        "name": "Web",
         "text": "브라우저에서 바로 쓸 수 있는 것들",
         "items": [
           {

@@ -792,6 +792,8 @@ ul { list-style: none; }
   padding-bottom: 20px;
   pointer-events: none;
 }
+.oc-profile { user-select: none; caret-color: transparent; }
+.oc-profile .pf-panel { user-select: text; }
 .pf-stand img {
   display: block;
   max-width: 100%;

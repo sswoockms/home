@@ -13,11 +13,11 @@
   var VER = (window.SITE && window.SITE.firebaseSdk) || '13.0.0';
   var BASE = 'https://www.gstatic.com/firebasejs/' + VER + '/';
   var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1, remote: 1 };      /* 편집기에서 건드리지 않는 항목 */
-  var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'works', 'oc', 'pair', 'owner', 'guest',
+  var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'works', 'oc', 'pair', 'owner', 'guest', 'log',
                'music', 'calendar', 'colors', 'bgImage', 'mobileWidth'];
   var TAB_NAME = {
     title: '탭 제목', home: '메인 소개', logo: '로고', illust: '메인 일러스트', menu: '메뉴',
-    works: 'Works', oc: 'Oc', pair: 'Pair', owner: 'Owner', guest: 'Guest 안내',
+    works: 'Works', oc: 'Oc', pair: 'Pair', owner: 'Owner', guest: 'Guest 안내', log: 'Log',
     music: '음악', calendar: '캘린더', colors: '색상', bgImage: '바탕 이미지', mobileWidth: '모바일 기준'
   };
   var LABEL = {
@@ -42,7 +42,7 @@
              preview: window.innerWidth >= 1000, pvMobile: false, pvFrame: null, pvBody: null, pvRoute: '', pvTimer: null, pvN: 0 };
   /* 편집 탭 → 미리보기에서 보여줄 화면 */
   var TAB_ROUTE = { home: '', logo: '', illust: '', menu: '', title: '', works: 'works', oc: 'oc', pair: 'pair',
-                    owner: 'owner', guest: 'guest', __gb: 'guest' };
+                    owner: 'owner', guest: 'guest', log: 'log', calendar: 'calendar', __gb: 'guest' };
 
   function $(sel, el) { return (el || document).querySelector(sel); }
   function h(tag, attrs, kids) {
@@ -111,10 +111,11 @@
   function previewPane() {
     var base = location.href.split('#')[0].split('?')[0];
     var pane = h('div', { class: 'oha-pv' });
-    var routes = [['', '메인'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['owner', 'Owner'], ['guest', 'Guest']];
+    var routes = [['', '메인'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['owner', 'Owner'], ['guest', 'Guest'], ['calendar', 'Calendar'], ['log', 'Log 목록']];
     var oc = (st.draft.oc && st.draft.oc.list) || [], pr = (st.draft.pair && st.draft.pair.list) || [];
     oc.forEach(function (c) { if (c.id) routes.push(['oc/' + c.id, 'Oc · ' + (c.name || c.id)]); });
     pr.forEach(function (p) { if (p.id) routes.push(['pair/' + p.id, 'Pair · ' + (p.name || p.id)]); });
+    ((st.draft.log && st.draft.log.list) || []).forEach(function (g) { if (g.id) routes.push(['log/' + g.id, 'Log · ' + (g.title || g.id)]); });
     var sel = h('select', { id: 'oha-route', class: 'oha-in', style: 'width:auto;flex:1;min-width:0' },
       routes.map(function (r) { return h('option', { value: r[0], text: r[1] }); }));
     sel.value = st.pvRoute;
@@ -242,7 +243,7 @@
   /* ---------- 값 편집기 (재귀) ---------- */
   function title(item, i) {
     if (item && typeof item === 'object') {
-      var k = ['name', 'title', 'label', 'id', 'en', 'date'].filter(function (x) { return item[x] && typeof item[x] === 'string'; })[0];
+      var k = ['name', 'title', 'label', 'id', 'en', 'date', 'oc', 'role'].filter(function (x) { return item[x] && typeof item[x] === 'string'; })[0];
       if (k) return (i + 1) + '. ' + item[k];
     }
     return (i + 1) + '번';
@@ -363,7 +364,75 @@
       id: '', name: '', en: '', thumb: '', relation: '', color: '', members: [], portraits: [],
       standings: [{ label: '기본', image: '' }], script: '', desc: '',
       stamp: { title: '', text: '' }, date: { big: '', sub: '', small: '' }, tabs: [clone(T_GALLERY)] } }];
+    if (key === 'list' && area === 'log') return [{ name: '새 로그', desc: '미리보기 카드 + 캐릭터 + 본문', value: {
+      id: '', title: '', date: '', system: '', desc: '', image: '', tags: [],
+      cast: [{ role: 'GM', name: '', player: '', image: '', oc: '' }, { role: 'PL', name: '', player: '', image: '', oc: '' }],
+      raw: '' } }];
+    if (key === 'cast') {
+      var mine = ((st.draft.oc && st.draft.oc.list) || []).map(function (c) {
+        return { name: '내 OC : ' + (c.name || c.id), desc: '굵은 테두리 + 누르면 OC 화면으로', value: { role: 'PL', name: '', player: '', image: '', oc: c.id } };
+      });
+      return mine.concat([
+        { name: 'GM', desc: '', value: { role: 'GM', name: '', player: '', image: '', oc: '' } },
+        { name: '다른 PL 캐릭터', desc: '', value: { role: 'PL', name: '', player: '', image: '', oc: '' } }]);
+    }
     return [];
+  }
+
+  function lockPanel(obj, redraw) {
+    var box = h('div', { class: 'oha-group' }, [h('div', { class: 'oha-gt', text: '로그 본문 잠금' })]);
+    var pw = h('input', { class: 'oha-in', type: 'text', placeholder: '비밀번호', autocomplete: 'off', style: 'max-width:220px' });
+    var bad = function (e) { toast(e && e.message ? e.message : '비밀번호가 올바르지 않아요.', true); };
+    if (obj.enc) {
+      box.appendChild(h('p', { class: 'oha-note', text: '잠긴 로그예요 (약 ' + Math.ceil(obj.enc.data.length / 1024) + 'KB). 내용을 고치려면 비밀번호로 열어 주세요.' }));
+      var open = h('button', { class: 'oha-btn', type: 'button', text: '비밀번호로 열기' });
+      open.onclick = function () {
+        if (!pw.value) return toast('비밀번호를 적어 주세요.', true);
+        window.LOCK.decrypt(obj.enc, pw.value).then(function (text) {
+          var data = JSON.parse(text);
+          obj.raw = data.raw || ''; if (data.html) obj.html = data.html;
+          delete obj.enc; touch(); redraw();
+          toast('열었어요. 고친 뒤 다시 잠가 주세요.');
+        }).catch(function () { bad(); });
+      };
+      var drop = h('button', { class: 'oha-btn is-bad', type: 'button', text: '잠긴 내용 지우기' });
+      drop.onclick = function () {
+        if (!confirm('잠긴 로그 내용을 지울까요? 되돌릴 수 없어요.')) return;
+        delete obj.enc; touch(); redraw();
+      };
+      box.appendChild(h('div', { class: 'oha-img' }, [pw, open, drop]));
+      return box;
+    }
+    box.appendChild(h('p', { class: 'oha-note', text: '위의 "로그 글" 칸에 내용을 적거나 html 로그 파일을 불러온 뒤, 비밀번호를 정해 잠글 수 있어요. 비밀번호는 어디에도 저장되지 않으니 따로 기억해 두세요.' }));
+    var file = h('input', { type: 'file', accept: '.html,.htm,.txt', hidden: 'hidden' });
+    var pick = h('button', { class: 'oha-btn', type: 'button', text: obj.html ? 'html 로그 바꾸기' : 'html 로그 불러오기' });
+    pick.onclick = function () { file.click(); };
+    file.onchange = function () {
+      var f = file.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () { obj.html = String(rd.result || ''); touch(); redraw(); toast('불러왔어요.'); };
+      rd.readAsText(f);
+    };
+    var row = [pick, file];
+    if (obj.html) {
+      var clr = h('button', { class: 'oha-btn is-bad', type: 'button', text: 'html 로그 빼기' });
+      clr.onclick = function () { delete obj.html; touch(); redraw(); };
+      row.push(h('span', { class: 'oha-note', text: 'html 로그 약 ' + Math.ceil(obj.html.length / 1024) + 'KB' }), clr);
+    }
+    box.appendChild(h('div', { class: 'oha-img' }, row));
+    var lock = h('button', { class: 'oha-btn is-main', type: 'button', text: '이 로그 잠그기' });
+    lock.onclick = function () {
+      if (!pw.value) return toast('비밀번호를 적어 주세요.', true);
+      if (!obj.raw && !obj.html) return toast('잠글 내용이 없어요.', true);
+      if (!window.LOCK || !window.crypto || !crypto.subtle) return toast('이 브라우저에서는 잠글 수 없어요.', true);
+      lock.disabled = true;
+      window.LOCK.encrypt(JSON.stringify({ raw: obj.raw || '', html: obj.html || '' }), pw.value).then(function (enc) {
+        obj.enc = enc; obj.raw = ''; delete obj.html; touch(); redraw();
+        toast('잠갔어요. 비밀번호를 잊지 마세요.');
+      }).catch(function (e) { lock.disabled = false; bad(e); });
+    };
+    box.appendChild(h('div', { class: 'oha-img', style: 'margin-top:8px' }, [pw, lock]));
+    return box;
   }
 
   /* 칸이 없는 항목을 나중에 다시 꺼내 쓰는 "+ 항목 추가" 목록 */
@@ -373,7 +442,9 @@
     standings: { portraits: [], script: '', color: '', theme: { background: '' }, size: 860 },
     tabs: { auto: true, sections: [], timelines: [], logs: [] },
     logs: { embed: '', link: '', desc: '', speakers: { '캐릭터 이름': { image: '' } }, raw: '' },
-    ocitem: { color: '', theme: { background: '' }, faction: '', badge: STAND_BADGE, stats: [], standingSize: 920, thumb: '' }
+    ocitem: { color: '', theme: { background: '' }, faction: '', badge: STAND_BADGE, stats: [], standingSize: 920, thumb: '', tags: [] },
+    pairitem: { tags: [] },
+    logitem: { image: '', tags: [], cast: [], embed: '', speakers: { '캐릭터 이름': { image: '' } } }
   };
   Object.assign(LABEL, { auto: '관계 자동 목록', timelines: '타임라인', logs: 'TRPG 로그', system: '룰', gm: 'GM',
     players: '참가자', embed: '로그 파일(html)', raw: '로그 글', speakers: '말하는 사람', side: '말풍선 위치',
@@ -388,7 +459,9 @@
     all: '전체', oc: 'Oc', pair: 'Pair', owner: 'Owner', guest: 'Guest', accent: '강조색', accentText: '강조색 위 글자',
     card: '카드 바탕', line: '선', soft: '옅은 바탕', menuText: '메뉴 글자', menuHover: '메뉴 올렸을 때',
     menuNumber: '메뉴 번호', menuLine: '메뉴 점선', frameBackground: '액자 안쪽', frameBorder: '액자 테두리',
-    frameShadow: '액자 그림자', placeholder: '자리 표시 상자', placeholderText: '자리 표시 글자', objectShadow: '오브젝트 그림자' });
+    frameShadow: '액자 그림자', placeholder: '자리 표시 상자', placeholderText: '자리 표시 글자', objectShadow: '오브젝트 그림자',
+    cast: '캐릭터 (GM / PL)', role: '역할 (GM / PL)', player: '플레이어', google: '구글 캘린더', apiKey: 'API 키',
+    calendarIds: '캘린더 ID' });
 
   /* 말하는 사람 : 이름(칸 이름)을 직접 고칠 수 있어야 해서 따로 */
   function speakersEd(obj) {
@@ -455,7 +528,7 @@
   function countOf(v) { return (Array.isArray(v) ? v.length : Object.keys(v).length) + '개'; }
   function routeFor() {
     var p = st.path || [], list = st.draft[st.tab] && st.draft[st.tab].list;
-    if ((st.tab === 'oc' || st.tab === 'pair') && p[0] === 'list' && typeof p[1] === 'number' && list && list[p[1]] && list[p[1]].id)
+    if ((st.tab === 'oc' || st.tab === 'pair' || st.tab === 'log') && p[0] === 'list' && typeof p[1] === 'number' && list && list[p[1]] && list[p[1]].id)
       return st.tab + '/' + list[p[1]].id;
     return TAB_ROUTE[st.tab] || '';
   }
@@ -495,11 +568,14 @@
 
   function fieldsEd(obj, key, path) {
     var box = h('div');
-    var optKey = (key === 'list' && st.tab === 'oc') ? 'ocitem' : key;
+    var optKey = key === 'list' ? ({ oc: 'ocitem', pair: 'pairitem', log: 'logitem' }[st.tab] || key) : key;
+    var isLog = st.tab === 'log' && key === 'list' && path.length === 2;
     function draw() {
       box.innerHTML = '';
       Object.keys(obj).forEach(function (k) {
         var v = obj[k], lab = LABEL[k] || k, sub = path.concat([k]);
+        if (isLog && (k === 'enc' || k === 'html')) return;
+        if (key === 'cast' && k === 'oc') lab = '내 OC 아이디';
         if (isPrim(v)) {
           box.appendChild(h('div', { class: 'oha-row' }, [h('div', { class: 'oha-lab', text: lab }),
             valueEd(v, function (nv) { obj[k] = nv; }, k, key)]));
@@ -513,6 +589,7 @@
           box.appendChild(enterRow(lab, countOf(v), sub));
         }
       });
+      if (isLog) box.appendChild(lockPanel(obj, draw));
       var opt = OPTIONAL[optKey];
       if (opt) {
         var missing = Object.keys(opt).filter(function (k) { return !(k in obj); });

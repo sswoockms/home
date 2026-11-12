@@ -303,6 +303,46 @@
               </section>
       </section>
 
+      <section class="page" data-page="log" hidden>
+              <section class="ow">
+                <aside class="ow-left">
+                  <a class="oc-home" href="#"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>HOME</a>
+                  <h1 class="oc-title" id="lgTitle"></h1>
+                  <p class="oc-sub" id="lgSub"></p>
+                  <div class="ow-card gs-card"><p class="gs-intro" id="lgIntro"></p></div>
+                </aside>
+                <div class="ow-right">
+                  <div class="ow-top"><nav class="ow-nav" id="lgNav"></nav></div>
+                  <div class="ow-panel" id="lgPanel"><div class="pr-body" id="lgBody"></div></div>
+                </div>
+              </section>
+      </section>
+
+      <section class="page" data-page="calendar" hidden>
+              <section class="ow">
+                <aside class="ow-left">
+                  <a class="oc-home" href="#"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>HOME</a>
+                  <h1 class="oc-title" id="clTitle"></h1>
+                  <p class="oc-sub" id="clSub"></p>
+                  <div class="ow-card gs-card"><div class="cl-side" id="clSide"></div></div>
+                </aside>
+                <div class="ow-right">
+                  <div class="ow-top">
+                    <nav class="ow-nav cl-nav">
+                      <button class="pr-nav-btn" id="clPrev" type="button" title="이전 달">‹</button>
+                      <strong class="cl-month" id="clMonth"></strong>
+                      <button class="pr-nav-btn" id="clNext" type="button" title="다음 달">›</button>
+                      <button class="pr-nav-btn" id="clToday" type="button">오늘</button>
+                    </nav>
+                  </div>
+                  <div class="ow-panel cl-panel">
+                    <div class="cl-grid" id="clGrid"></div>
+                    <div class="cl-day" id="clDay"></div>
+                  </div>
+                </div>
+              </section>
+      </section>
+
       <!-- ==================== 관리자 (#admin / 화면은 admin.js 가 그려요) ==================== -->
       <section class="page" data-page="admin" hidden></section>
 
@@ -409,6 +449,113 @@
     });
     return { open: open, close: close, isOpen: function () { return !$('lb').hidden; } };
   })();
+
+  window.LOCK = (function () {
+    var ROUNDS = 150000;
+    function b64(buf) {
+      var s = '', b = new Uint8Array(buf);
+      for (var i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+      return btoa(s);
+    }
+    function unb64(s) {
+      var bin = atob(s), b = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+      return b;
+    }
+    function key(pw, salt, rounds, use) {
+      return crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+        return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: rounds, hash: 'SHA-256' }, k,
+          { name: 'AES-GCM', length: 256 }, false, [use]);
+      });
+    }
+    function pipe(bytes, stream) { return new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer(); }
+    function encrypt(text, pw) {
+      var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+      var raw = new TextEncoder().encode(text);
+      var packed = window.CompressionStream
+        ? pipe(raw, new CompressionStream('gzip')).then(function (b) { return { z: 1, b: b }; })
+        : Promise.resolve({ z: 0, b: raw });
+      return packed.then(function (p) {
+        return key(pw, salt, ROUNDS, 'encrypt').then(function (k) {
+          return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, p.b);
+        }).then(function (ct) {
+          return { v: 1, z: p.z, rounds: ROUNDS, salt: b64(salt), iv: b64(iv), data: b64(ct) };
+        });
+      });
+    }
+    function decrypt(enc, pw) {
+      return key(pw, unb64(enc.salt), enc.rounds || ROUNDS, 'decrypt').then(function (k) {
+        return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(enc.iv) }, k, unb64(enc.data));
+      }).then(function (buf) {
+        return enc.z ? pipe(buf, new DecompressionStream('gzip')) : buf;
+      }).then(function (buf) { return new TextDecoder().decode(buf); });
+    }
+    return { encrypt: encrypt, decrypt: decrypt };
+  })();
+
+  window.GCAL = (function () {
+    var G = ((window.SITE || {}).calendar || {}).google || {};
+    var ids = (G.calendarIds || []).filter(Boolean), key = G.apiKey || '';
+    var cache = {}, days = {}, seen = {};
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function load(y, m) {
+      if (!key || !ids.length) return Promise.resolve(false);
+      var mk = y + '-' + m;
+      if (cache[mk]) return cache[mk];
+      var min = new Date(y, m, 1).toISOString(), max = new Date(y, m + 1, 1).toISOString();
+      cache[mk] = Promise.all(ids.map(function (id) {
+        return fetch('https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(id) + '/events?key=' +
+          encodeURIComponent(key) + '&timeMin=' + encodeURIComponent(min) + '&timeMax=' + encodeURIComponent(max) +
+          '&singleEvents=true&orderBy=startTime&maxResults=250')
+          .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+          .catch(function () { return { items: [] }; });
+      })).then(function (res) {
+        res.forEach(function (r) {
+          (r.items || []).forEach(function (e) {
+            if (!e.start || !e.end) return;
+            var allDay = !!e.start.date;
+            var s = new Date(allDay ? e.start.date + 'T00:00:00' : e.start.dateTime);
+            var en = new Date(allDay ? e.end.date + 'T00:00:00' : (e.end.dateTime || e.start.dateTime));
+            if (allDay) en = new Date(en.getTime() - 86400000);
+            var cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+            var last = new Date(en.getFullYear(), en.getMonth(), en.getDate()), n = 0;
+            while (cur <= last && n++ < 62) {
+              var k = cur.getFullYear() + '-' + pad(cur.getMonth() + 1) + '-' + pad(cur.getDate());
+              if (!seen[e.id + k]) {
+                seen[e.id + k] = 1;
+                (days[k] = days[k] || []).push({ title: e.summary || '(제목 없음)',
+                  time: allDay ? '' : pad(s.getHours()) + ':' + pad(s.getMinutes()) });
+              }
+              cur.setDate(cur.getDate() + 1);
+            }
+          });
+        });
+        return true;
+      });
+      return cache[mk];
+    }
+    function on(y, m, d) { return days[y + '-' + pad(m) + '-' + pad(d)] || []; }
+    return { load: load, on: on, enabled: !!(key && ids.length) };
+  })();
+
+  window.TAGFILTER = function (host, grid, tagLists) {
+    var names = [];
+    tagLists.forEach(function (t) { (t || []).forEach(function (x) { if (x && names.indexOf(x) < 0) names.push(x); }); });
+    if (!names.length) return;
+    var bar = document.createElement('div'); bar.className = 'tagbar';
+    function pick(t) {
+      [].forEach.call(bar.children, function (b) { b.classList.toggle('is-active', b.dataset.tag === t); });
+      [].forEach.call(grid.children, function (c, i) { c.hidden = !!t && (tagLists[i] || []).indexOf(t) < 0; });
+    }
+    [''].concat(names).forEach(function (t) {
+      var b = document.createElement('button');
+      b.className = 'pr-nav-btn'; b.type = 'button'; b.textContent = t || '전체'; b.dataset.tag = t;
+      b.onclick = function () { pick(t); };
+      bar.appendChild(b);
+    });
+    host.appendChild(bar);
+    pick('');
+  };
   </script>
 
   <!-- ==================== 메인홈 ==================== -->
@@ -645,7 +792,7 @@
     root.className = 'mp cal cal--' + pos;
     root.innerHTML =
       '<div class="mp-head">' +
-        '<span class="mp-label">' + (cfg.label || 'CALENDAR') + '</span>' +
+        '<a class="mp-label" href="#calendar" title="캘린더 화면으로">' + (cfg.label || 'CALENDAR') + '</a>' +
         '<div class="mp-hbtns"><button class="mp-icon" data-act="fold" title="접기 / 펼치기">' +
           '<svg viewBox="0 0 24 24" class="line"><path d="M6 12h12"/></svg></button></div>' +
       '</div>' +
@@ -686,15 +833,21 @@
         if (wd === 0) b.classList.add('is-sun');
         if (wd === 6) b.classList.add('is-sat');
         if (dt.getTime() === today.getTime()) b.classList.add('is-today');
-        if (ev.length) { b.classList.add('has-ev'); b.title = ev.join('\n'); }
-        if (selected && dt.getTime() === selected.getTime()) b.classList.add('is-sel');
-        b.onclick = function () {
-          selected = (selected && selected.getTime() === dt.getTime()) ? null : dt;
-          render(false); foot();
-        };
+        var all = ev.concat(GCAL.on(y, m + 1, d).map(function (g) { return g.title; }));
+        if (ev.length) b.classList.add('has-ev');
+        if (all.length) { b.title = all.join('\n'); b.classList.add('is-d' + Math.min(all.length, 4)); }
+        b.onclick = function () { location.hash = '#calendar/' + y + '-' + pad(m + 1) + '-' + pad(d); };
         grid.appendChild(b);
       })(d);
+      var mk = y + '-' + m;
+      if (!asked[mk]) {
+        asked[mk] = 1;
+        GCAL.load(y, m).then(function (ok) {
+          if (ok && view.getFullYear() === y && view.getMonth() === m) render(false);
+        });
+      }
     }
+    var asked = {};
 
     /* 아래쪽 : 다가오는 기념일 D-day + 함께한 날 D+ */
     function foot() {
@@ -745,7 +898,7 @@
     var head = q('.mp-head'), sx = 0, sy = 0, px = 0, py = 0, sc = 1, drag = false;
     var box = root.parentNode;
     head.addEventListener('pointerdown', function (e) {
-      if (e.target.closest('button')) return;
+      if (e.target.closest('button,a')) return;
       if (document.documentElement.classList.contains('is-mobile')) return;   /* 모바일은 고정 */
       var r = root.getBoundingClientRect(), br = box.getBoundingClientRect();
       sc = br.width / box.offsetWidth || 1;
@@ -823,6 +976,7 @@
       a.appendChild(meta);
       grid.appendChild(a);
     });
+    TAGFILTER($('ocList').querySelector('.oc-head'), grid, LIST.map(function (c) { return c.tags; }));
 
     /* ======================================================
        프로필 화면
@@ -1223,6 +1377,7 @@
       a.appendChild(tx);
       grid.appendChild(a);
     });
+    TAGFILTER($('prList').querySelector('.oc-head'), grid, LIST.map(function (p) { return p.tags; }));
 
     /* ======================================================
        페어 화면
@@ -1545,7 +1700,8 @@
       return wrap;
     }
 
-    function renderLog(lg) {
+    window.LOGVIEW = { render: renderLog };
+    function renderLog(lg, bare) {
       var box = el('div', 'lg-doc');
 
       /* 위쪽 정보 */
@@ -1565,7 +1721,7 @@
         a.href = lg.link; a.target = '_blank'; a.rel = 'noopener';
         head.appendChild(a);
       }
-      box.appendChild(head);
+      if (!bare) box.appendChild(head);
 
       /* 로그 파일(html)을 통째로 넣는 경우 */
       if (lg.embed) {
@@ -2427,7 +2583,7 @@
     PAGES.works = function () { document.title = (W.title || 'Works') + ' | ' + (D.title || ''); };
 
     var sortMode = W.sort === 'old' ? 'old' : 'new';   /* 기본 : 최신순 */
-    function workCard(w, i) {
+    function workCard(w, i, tags, onTag) {
       var a = el(w.url ? 'a' : 'div', 'wk-card');
       if (w.url) { a.href = w.url; a.target = '_blank'; a.rel = 'noopener'; }
       a.style.animationDelay = (0.05 + i * 0.05) + 's';
@@ -2443,9 +2599,13 @@
         var dt = dm ? dm[2] + '.' + ('0' + dm[3]).slice(-2) + '.' + ('0' + dm[4]).slice(-2) : w.date;
         th.appendChild(el('span', 'wk-date', dt));
       }
-      if (w.tags && w.tags.length) {
+      if (tags && tags.length) {
         var tg = el('span', 'wk-tags');
-        w.tags.forEach(function (t) { tg.appendChild(el('em', '', t)); });
+        tags.forEach(function (t) {
+          var em = el('em', '', t);
+          em.onclick = function (e) { e.preventDefault(); e.stopPropagation(); onTag(t); };
+          tg.appendChild(em);
+        });
         tx.appendChild(tg);
       }
       a.appendChild(tx);
@@ -2457,21 +2617,37 @@
       }
       return a;
     }
-    tabs('wkNav', 'wkPanel', 'wkBody', W.categories || [], function (cat, body) {
-      body.appendChild(el('p', 'pr-detail-title', cat.name || ''));
-      if (cat.text) body.appendChild(el('p', 'pf-sec-text wk-lead', cat.text));
-      var items = (cat.items || []).slice();
+    (function () {
+      var body = $('wkBody'), nav = $('wkNav'), pick = '';
+      var items = [], names = [];
+      (W.categories || []).forEach(function (cat) {
+        (cat.items || []).forEach(function (w) {
+          var t = (w.tags || []).filter(Boolean);
+          if (cat.name && t.indexOf(cat.name) < 0) t = [cat.name].concat(t);
+          items.push({ w: w, tags: t });
+          t.forEach(function (x) { if (names.indexOf(x) < 0) names.push(x); });
+        });
+      });
       var bar = el('div', 'wk-sort');
       var grid = el('div', 'wk-grid');
+      function setTag(t) { pick = (t === pick) ? '' : t; $('wkPanel').scrollTop = 0; draw(); }
+      [''].concat(names).forEach(function (t) {
+        var b = el('button', 'pr-nav-btn', t || '전체');
+        b.dataset.tag = t;
+        b.onclick = function () { pick = t; draw(); };
+        nav.appendChild(b);
+      });
       function draw() {
         grid.innerHTML = '';
-        var list = items.map(function (w, i) { return { w: w, i: i }; });
+        [].forEach.call(nav.children, function (b) { b.classList.toggle('is-active', b.dataset.tag === pick); });
+        var list = items.filter(function (x) { return !pick || x.tags.indexOf(pick) >= 0; })
+          .map(function (x, i) { return { w: x.w, tags: x.tags, i: i }; });
         list.sort(function (a, b) {
           var da = a.w.date || '', db = b.w.date || '';
           if (da === db) return sortMode === 'old' ? a.i - b.i : b.i - a.i;   /* 날짜가 같으면 적은 순서 기준 */
           return sortMode === 'old' ? (da < db ? -1 : 1) : (da < db ? 1 : -1);
         });
-        list.forEach(function (x, i) { grid.appendChild(workCard(x.w, i)); });
+        list.forEach(function (x, i) { grid.appendChild(workCard(x.w, i, x.tags, setTag)); });
         if (!list.length) grid.appendChild(el('p', 'pf-gal-empty', '작품을 넣어 주세요'));
         [].forEach.call(bar.children, function (b) { b.classList.toggle('is-active', b.dataset.mode === sortMode); });
       }
@@ -2484,9 +2660,297 @@
       if (items.length > 1) body.appendChild(bar);
       body.appendChild(grid);
       draw();
-    });
+    })();
 
       })();
+  </script>
+
+  <script>
+  (function () {
+    var D = window.SITE || {};
+    function $(id) { return document.getElementById(id); }
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function navBtn(text, fn) { var b = el('button', 'pr-nav-btn', text); b.type = 'button'; b.onclick = fn; return b; }
+
+    var L = D.log || {}, LOGS = (L.list || []).filter(Boolean);
+    var OCS = (D.oc || {}).list || [];
+    var LP = document.querySelector('.page[data-page="log"]');
+    THEME.apply(LP, THEME.base('owner'));
+    $('lgTitle').textContent = L.title || 'Log';
+    $('lgSub').textContent = L.subtitle || '';
+    $('lgIntro').textContent = L.intro || '';
+    $('lgIntro').parentNode.hidden = !L.intro;
+
+    var lgPick = '', lgNames = [], opened = {};
+    LOGS.forEach(function (g) { (g.tags || []).forEach(function (t) { if (t && lgNames.indexOf(t) < 0) lgNames.push(t); }); });
+    function logId(g, i) { return g.id || ('log' + (i + 1)); }
+    function ocOf(id) { return OCS.filter(function (c) { return c.id === id; })[0]; }
+    function tagRow(tags) {
+      var tg = el('span', 'wk-tags');
+      (tags || []).filter(Boolean).forEach(function (t) {
+        var em = el('em', '', t);
+        em.onclick = function (e) { e.preventDefault(); e.stopPropagation(); lgPick = t; location.hash = '#log'; drawLogs(); };
+        tg.appendChild(em);
+      });
+      return tg;
+    }
+
+    function drawLogs() {
+      var nav = $('lgNav'), body = $('lgBody');
+      nav.innerHTML = ''; body.innerHTML = ''; $('lgPanel').scrollTop = 0;
+      [''].concat(lgNames).forEach(function (t) {
+        var b = navBtn(t || '전체', function () { lgPick = t; drawLogs(); });
+        b.classList.toggle('is-active', t === lgPick);
+        nav.appendChild(b);
+      });
+      var grid = el('div', 'wk-grid'), n = 0;
+      LOGS.forEach(function (g, i) {
+        if (lgPick && (g.tags || []).indexOf(lgPick) < 0) return;
+        var a = el('a', 'wk-card');
+        a.href = '#log/' + encodeURIComponent(logId(g, i));
+        a.style.animationDelay = (0.05 + n++ * 0.05) + 's';
+        var th = el('span', 'wk-thumb');
+        if (g.image) th.style.backgroundImage = 'url("' + g.image + '")'; else th.classList.add('is-empty');
+        if (g.system) th.appendChild(el('span', 'wk-status', g.system));
+        if (g.date) th.appendChild(el('span', 'wk-date', g.date));
+        if (g.enc) th.appendChild(el('span', 'lgp-lock', 'LOCKED'));
+        a.appendChild(th);
+        var tx = el('span', 'wk-text');
+        tx.appendChild(el('strong', 'wk-name', g.title || ''));
+        if (g.desc) tx.appendChild(el('span', 'wk-desc', g.desc));
+        if ((g.tags || []).length) tx.appendChild(tagRow(g.tags));
+        a.appendChild(tx);
+        grid.appendChild(a);
+      });
+      if (!n) grid.appendChild(el('p', 'pf-gal-empty', '로그를 넣어 주세요'));
+      body.appendChild(grid);
+    }
+
+    function castRow(g) {
+      var box = el('div', 'lgp-cast');
+      (g.cast || []).forEach(function (c) {
+        if (!c) return;
+        var oc = c.oc ? ocOf(c.oc) : null;
+        var name = c.name || (oc && oc.name) || '';
+        var item = el(oc ? 'a' : 'div', 'lgp-member' + (oc ? ' is-mine' : ''));
+        if (oc) { item.href = '#oc/' + encodeURIComponent(oc.id); item.title = name + ' 프로필 보기'; }
+        var av = el('span', 'lgp-av');
+        var src = c.image || (oc && (oc.thumb || ((oc.standing || [])[0] || {}).image));
+        if (src) av.style.backgroundImage = 'url("' + src + '")'; else av.textContent = name.charAt(0);
+        item.appendChild(av);
+        var tx = el('span', 'lgp-who');
+        tx.appendChild(el('em', '', c.role || 'PL'));
+        tx.appendChild(el('strong', '', name));
+        if (c.player) tx.appendChild(el('span', '', c.player));
+        item.appendChild(tx);
+        box.appendChild(item);
+      });
+      return box;
+    }
+
+    function logContent(g, data) {
+      var src = data || g;
+      if (src.html) {
+        var fr = el('iframe', 'lg-embed lgp-frame');
+        fr.setAttribute('sandbox', ''); fr.title = g.title || 'log'; fr.srcdoc = src.html;
+        return fr;
+      }
+      if (!data && g.embed) {
+        var fe = el('iframe', 'lg-embed lgp-frame');
+        fe.src = g.embed; fe.loading = 'lazy'; fe.title = g.title || 'log';
+        return fe;
+      }
+      var sp = {}, gm = '';
+      (g.cast || []).forEach(function (c) {
+        if (!c) return;
+        var oc = c.oc ? ocOf(c.oc) : null, name = c.name || (oc && oc.name) || '';
+        if (!name) return;
+        var isGm = /^(GM|KP|DM|ST|GL)$/i.test(c.role || '');
+        if (isGm) gm = name;
+        sp[name] = { image: c.image || (oc && (oc.thumb || ((oc.standing || [])[0] || {}).image)) || '', gm: isGm };
+        if (oc) sp[name].side = 'right';
+      });
+      var extra = g.speakers || {};
+      Object.keys(extra).forEach(function (k) { sp[k] = extra[k]; });
+      if (window.LOGVIEW) return LOGVIEW.render({ raw: src.raw || '', speakers: sp, gm: gm }, true);
+      return el('pre', 'lgp-pre', src.raw || '');
+    }
+
+    function lockForm(g, id, holder) {
+      var form = el('form', 'lgp-gate');
+      form.appendChild(el('p', 'lgp-gate-t', 'Protected Log'));
+      form.appendChild(el('p', 'lgp-gate-s', '비밀번호를 입력하면 로그가 열려요'));
+      var inp = el('input', 'lgp-in'); inp.type = 'password'; inp.placeholder = '비밀번호'; inp.autocomplete = 'off';
+      inp.setAttribute('aria-label', '비밀번호');
+      var btn = el('button', 'pr-nav-btn is-active', '열기'); btn.type = 'submit';
+      var msg = el('p', 'lgp-gate-e', '');
+      form.appendChild(inp); form.appendChild(btn); form.appendChild(msg);
+      form.onsubmit = function (e) {
+        e.preventDefault();
+        if (!inp.value) return;
+        btn.disabled = true; btn.textContent = '확인 중…'; msg.textContent = '';
+        LOCK.decrypt(g.enc, inp.value).then(function (text) {
+          var data = JSON.parse(text);
+          opened[id] = data;
+          holder.innerHTML = '';
+          holder.appendChild(logContent(g, data));
+        }).catch(function () {
+          btn.disabled = false; btn.textContent = '열기';
+          msg.textContent = '비밀번호가 올바르지 않아요';
+          inp.select();
+        });
+      };
+      return form;
+    }
+
+    function showLog(g, id) {
+      var nav = $('lgNav'), body = $('lgBody');
+      nav.innerHTML = ''; body.innerHTML = ''; $('lgPanel').scrollTop = 0;
+      nav.appendChild(navBtn('← 목록', function () { location.hash = '#log'; }));
+      var head = el('div', 'lgp-head');
+      var meta = [g.system, g.date].filter(Boolean).join(' · ');
+      if (meta) head.appendChild(el('p', 'lgp-meta', meta));
+      head.appendChild(el('h2', 'pr-detail-title', g.title || ''));
+      if (g.desc) head.appendChild(el('p', 'pf-sec-text', g.desc));
+      if ((g.tags || []).length) head.appendChild(tagRow(g.tags));
+      body.appendChild(head);
+      if ((g.cast || []).length) body.appendChild(castRow(g));
+      var holder = el('div', 'lgp-doc');
+      if (g.enc && !opened[id]) holder.appendChild(lockForm(g, id, holder));
+      else holder.appendChild(logContent(g, opened[id]));
+      body.appendChild(holder);
+    }
+
+    PAGES.log = function (sub) {
+      document.title = (L.title || 'Log') + ' | ' + (D.title || '');
+      var hit = null, hid = '';
+      if (sub) LOGS.forEach(function (g, i) { if (!hit && logId(g, i) === sub) { hit = g; hid = sub; } });
+      if (hit) { document.title = (hit.title || 'Log') + ' | ' + (D.title || ''); showLog(hit, hid); }
+      else drawLogs();
+    };
+
+    var C = D.calendar || {};
+    var CP = document.querySelector('.page[data-page="calendar"]');
+    THEME.apply(CP, THEME.base('owner'));
+    $('clTitle').textContent = C.title || 'Calendar';
+    $('clSub').textContent = C.subtitle || 'Schedule & Anniversaries';
+    var start = C.weekStart === 1 ? 1 : 0;
+    var WEEK = start ? ['월', '화', '수', '목', '금', '토', '일'] : ['일', '월', '화', '수', '목', '금', '토'];
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var view = new Date(today.getFullYear(), today.getMonth(), 1), sel = today, asked = {};
+
+    var FIXED = (C.events || []).map(function (e) {
+      var p = String(e.date || '').split('-').map(Number), o = { title: e.title || '' };
+      if (p.length === 2) { o.m = p[0]; o.d = p[1]; o.yearly = true; }
+      else if (p.length === 3) { o.y = p[0]; o.m = p[1]; o.d = p[2]; o.yearly = !!e.yearly; }
+      return o;
+    }).filter(function (o) { return o.m && o.d; });
+    function fixedOn(y, m, d) {
+      return FIXED.filter(function (e) {
+        if (e.m !== m || e.d !== d) return false;
+        return e.yearly ? (!e.y || y >= e.y) : e.y === y;
+      }).map(function (e) {
+        return { title: e.title + (e.yearly && e.y && y > e.y ? ' (' + (y - e.y) + '주년)' : ''), time: '', fixed: true };
+      });
+    }
+    function eventsOn(dt) {
+      return fixedOn(dt.getFullYear(), dt.getMonth() + 1, dt.getDate())
+        .concat(GCAL.on(dt.getFullYear(), dt.getMonth() + 1, dt.getDate()));
+    }
+
+    function drawSide() {
+      var box = $('clSide'); box.innerHTML = '';
+      (C.counters || []).forEach(function (c) {
+        var p = String(c.date || '').split('-').map(Number);
+        if (p.length !== 3 || !p[0]) return;
+        var n = Math.round((today - new Date(p[0], p[1] - 1, p[2])) / 86400000) + (C.countFromOne === false ? 0 : 1);
+        var r = el('div', 'cl-row'); r.appendChild(el('b', '', 'D+' + n)); r.appendChild(el('span', '', c.title || ''));
+        box.appendChild(r);
+      });
+      var left = 5;
+      for (var i = 0; i <= 366 && left > 0; i++) {
+        var dt = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+        eventsOn(dt).forEach(function (ev) {
+          if (left <= 0) return; left--;
+          var r = el('div', 'cl-row');
+          r.appendChild(el('b', '', i === 0 ? 'D-DAY' : 'D-' + i));
+          r.appendChild(el('span', '', ev.title));
+          r.appendChild(el('i', '', pad(dt.getMonth() + 1) + '.' + pad(dt.getDate())));
+          box.appendChild(r);
+        });
+      }
+      box.parentNode.hidden = !box.children.length;
+    }
+
+    function drawDay() {
+      var box = $('clDay'); box.innerHTML = '';
+      if (!sel) return;
+      box.appendChild(el('h3', 'cl-day-title', sel.getFullYear() + '. ' + pad(sel.getMonth() + 1) + '. ' + pad(sel.getDate()) +
+        ' (' + ['일', '월', '화', '수', '목', '금', '토'][sel.getDay()] + ')'));
+      var list = eventsOn(sel);
+      if (!list.length) { box.appendChild(el('p', 'cl-none', '일정이 없어요')); return; }
+      list.forEach(function (ev) {
+        var r = el('div', 'cl-item' + (ev.fixed ? ' is-fixed' : ''));
+        r.appendChild(el('b', '', ev.time || (ev.fixed ? '기념일' : '종일')));
+        r.appendChild(el('span', '', ev.title));
+        box.appendChild(r);
+      });
+    }
+
+    function drawMonth() {
+      var y = view.getFullYear(), m = view.getMonth();
+      $('clMonth').textContent = y + '. ' + pad(m + 1);
+      var grid = $('clGrid'); grid.innerHTML = '';
+      WEEK.forEach(function (w, i) {
+        var real = (i + start) % 7;
+        grid.appendChild(el('span', 'cl-wd' + (real === 0 ? ' is-sun' : real === 6 ? ' is-sat' : ''), w));
+      });
+      var first = (new Date(y, m, 1).getDay() - start + 7) % 7, days = new Date(y, m + 1, 0).getDate();
+      for (var i = 0; i < first; i++) grid.appendChild(el('span', 'cl-cell is-blank'));
+      for (var d = 1; d <= days; d++) (function (d) {
+        var dt = new Date(y, m, d), ev = eventsOn(dt), wd = dt.getDay();
+        var b = el('button', 'cl-cell'); b.type = 'button';
+        if (ev.length) b.classList.add('is-d' + Math.min(ev.length, 4));
+        if (wd === 0) b.classList.add('is-sun');
+        if (wd === 6) b.classList.add('is-sat');
+        if (dt.getTime() === today.getTime()) b.classList.add('is-today');
+        if (sel && dt.getTime() === sel.getTime()) b.classList.add('is-sel');
+        b.appendChild(el('span', 'cl-num', String(d)));
+        ev.slice(0, 2).forEach(function (e) { b.appendChild(el('span', 'cl-ev', e.title)); });
+        if (ev.length > 2) b.appendChild(el('span', 'cl-more', '+' + (ev.length - 2)));
+        b.onclick = function () { sel = dt; drawMonth(); drawDay(); };
+        grid.appendChild(b);
+      })(d);
+      var mk = y + '-' + m;
+      if (!asked[mk]) {
+        asked[mk] = 1;
+        GCAL.load(y, m).then(function (ok) {
+          if (!ok) return;
+          if (view.getFullYear() === y && view.getMonth() === m) { drawMonth(); drawDay(); }
+          drawSide();
+        });
+      }
+    }
+    $('clPrev').onclick = function () { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); drawMonth(); };
+    $('clNext').onclick = function () { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); drawMonth(); };
+    $('clToday').onclick = function () { view = new Date(today.getFullYear(), today.getMonth(), 1); sel = today; drawMonth(); drawDay(); };
+
+    PAGES.calendar = function (sub) {
+      document.title = (C.title || 'Calendar') + ' | ' + (D.title || '');
+      var p = String(sub || '').split('-').map(Number);
+      if (p.length === 3 && p[0] && p[1] && p[2]) {
+        sel = new Date(p[0], p[1] - 1, p[2]);
+        view = new Date(p[0], p[1] - 1, 1);
+      }
+      drawMonth(); drawDay(); drawSide();
+    };
+  })();
   </script>
 
   <!-- 관리자 편집기 (#admin) : 필요할 때만 admin.js 를 불러와요 -->

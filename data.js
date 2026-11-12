@@ -160,6 +160,14 @@ window.SITE = {
     {
       "name": "Guest",
       "link": "#guest"
+    },
+    {
+      "name": "Calendar",
+      "link": "#calendar"
+    },
+    {
+      "name": "Log",
+      "link": "#log"
     }
   ],
   "music": {
@@ -198,7 +206,19 @@ window.SITE = {
         "title": ""
       }
     ],
-    "countFromOne": true
+    "countFromOne": true,
+    "google": {
+      "apiKey": "",
+      "calendarIds": [
+        ""
+      ]
+    }
+  },
+  "log": {
+    "title": "Log",
+    "subtitle": "TRPG Session Logs",
+    "intro": "",
+    "list": []
   },
   "oc": {
     "title": "Oc",

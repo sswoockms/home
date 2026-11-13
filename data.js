@@ -1,3 +1,8 @@
+/* data.js — 사이트 내용
+   편집기의 "data.js 내보내기" 로 뽑은 파일이에요.
+   이 파일을 GitHub 저장소에 올리면(커밋) Vercel 이 자동 배포해 사이트에 반영돼요.
+   remote: false 로 두면 이 data.js 가 정본으로 쓰여요. */
+
 window.SITE = {
   "admin": {
     "email": "swoonqx@gmail.com"
@@ -889,7 +894,12 @@ window.SITE = {
           "name": "Site",
           "items": [
             {
-              "name": "사이트 이름",
+              "name": "mine",
+              "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1794534267779-mirikkan_banner_200.png?alt=media&token=810fdf6b-334f-49d7-976a-4de30424f100",
+              "link": "https://swoonqxhome.vercel.app/"
+            },
+            {
+              "name": "",
               "image": "",
               "link": ""
             }

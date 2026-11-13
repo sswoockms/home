@@ -2420,7 +2420,8 @@
     }
 
     /* ---------- Firebase (Firestore) 방명록 ----------
-       공개글은 누구나 읽고, 비밀글(secret: true)은 보안 규칙으로 막혀서 콘솔에서만 보여요. */
+       공개글은 누구나 읽어요. 비밀글은 비밀번호로 잠근 글(lock)만 공개 목록에 올라가고,
+       원문과 비밀번호는 secret: true 글에 따로 저장돼 보안 규칙으로 오너만 읽어요. */
     function buildFirebase() {
       var FB = G.firebase || {}, cfg = FB.config || {};
       var COL = FB.collection || 'guests';
@@ -2433,6 +2434,7 @@
         '<div class="gs-form-row">' +
           '<input class="gs-input" name="name" maxlength="20" autocomplete="off">' +
           '<label class="gs-secret"><input type="checkbox" name="secret"><span>비밀글</span></label>' +
+          '<input class="gs-input gs-pin" name="pin" type="password" maxlength="4" inputmode="numeric" autocomplete="off" placeholder="비밀번호 4자리" aria-label="비밀번호 4자리" hidden>' +
         '</div>' +
         '<textarea class="gs-input gs-text" name="message" maxlength="' + MAX + '" rows="3"></textarea>' +
         '<div class="gs-form-foot">' +
@@ -2445,6 +2447,12 @@
       msgIn.addEventListener('input', function () {
         form.querySelector('.gs-count').textContent = msgIn.value.length + ' / ' + MAX;
       });
+      var secretIn = form.querySelector('[name=secret]'), pinIn = form.querySelector('[name=pin]');
+      secretIn.addEventListener('change', function () {
+        pinIn.hidden = !secretIn.checked;
+        if (secretIn.checked) pinIn.focus(); else pinIn.value = '';
+      });
+      pinIn.addEventListener('input', function () { pinIn.value = pinIn.value.replace(/\D/g, ''); });
       panel.appendChild(form);
 
       var listBox = el('div', 'gs-list');
@@ -2479,13 +2487,38 @@
         head.appendChild(el('strong', 'gs-item-name', e.name || '익명'));
         head.appendChild(el('span', 'gs-item-date', e.time || ''));
         c.appendChild(head);
-        c.appendChild(el('p', 'gs-item-text', e.message || ''));
-        if (e.reply) {
+        function body(message, reply) {
+          c.appendChild(el('p', 'gs-item-text', message || ''));
+          if (!reply) return;
           var rp = el('div', 'gs-reply');
           rp.appendChild(el('span', 'gs-reply-name', '↳ ' + (G.ownerName || 'Owner')));
-          rp.appendChild(el('p', '', e.reply));
+          rp.appendChild(el('p', '', reply));
           c.appendChild(rp);
         }
+        if (!e.lock || !e.enc) { body(e.message, e.reply); return c; }
+        var gate = el('form', 'gs-gate');
+        gate.appendChild(el('span', 'gs-gate-t', '비밀글입니다.'));
+        var pw = el('input', 'gs-input gs-pin');
+        pw.type = 'password'; pw.maxLength = 4; pw.inputMode = 'numeric'; pw.autocomplete = 'off';
+        pw.placeholder = '비밀번호'; pw.setAttribute('aria-label', '비밀번호 4자리');
+        pw.oninput = function () { pw.value = pw.value.replace(/\D/g, ''); };
+        gate.appendChild(pw);
+        gate.appendChild(el('button', 'bn-btn', '확인'));
+        gate.onsubmit = function (ev) {
+          ev.preventDefault();
+          var pin = pw.value;
+          if (!/^\d{4}$/.test(pin)) { toast('비밀번호 4자리를 적어 주세요.'); pw.focus(); return; }
+          gate.classList.add('is-busy');
+          LOCK.decrypt(e.enc, pin).then(function (text) {
+            return (e.replyEnc ? LOCK.decrypt(e.replyEnc, pin).catch(function () { return ''; }) : Promise.resolve(''))
+              .then(function (reply) { gate.remove(); body(text, reply); });
+          }, function () {
+            gate.classList.remove('is-busy');
+            pw.value = ''; pw.focus();
+            toast('비밀번호가 올바르지 않아요.');
+          });
+        };
+        c.appendChild(gate);
         return c;
       }
       function showMore() {
@@ -2509,7 +2542,8 @@
           snap.forEach(function (d) {
             var v = d.data();
             var ms = v.createdAt && v.createdAt.toMillis ? v.createdAt.toMillis() : 0;
-            entries.push({ ms: ms, time: fmt(v.createdAt), name: v.name, message: v.message, reply: v.reply });
+            entries.push({ ms: ms, time: fmt(v.createdAt), name: v.name, message: v.message, reply: v.reply,
+                           lock: v.lock, enc: v.enc, replyEnc: v.replyEnc });
           });
           entries.sort(function (a, b) { return G.newestFirst === false ? a.ms - b.ms : b.ms - a.ms; });
           listBox.innerHTML = ''; shown = 0;
@@ -2528,26 +2562,30 @@
         ev.preventDefault();
         if (lock) return;
         var name = nameIn.value.trim(), msg = msgIn.value.trim();
-        var secret = !!form.querySelector('[name=secret]').checked;
+        var secret = secretIn.checked, pin = pinIn.value, sealed = null;
         if (!name) { toast('이름을 적어 주세요.'); nameIn.focus(); return; }
         if (!msg) { toast('내용을 적어 주세요.'); msgIn.focus(); return; }
+        if (secret && !/^\d{4}$/.test(pin)) { toast('비밀번호는 숫자 4자리로 적어 주세요.'); pinIn.focus(); return; }
         lock = true;
         form.classList.add('is-sending');
         db().then(function (c) {
-          return c.fs.addDoc(c.fs.collection(c.db, COL), {
-            name: name, message: msg, secret: secret, createdAt: c.fs.serverTimestamp()
+          var col = c.fs.collection(c.db, COL);
+          if (!secret) return c.fs.addDoc(col, { name: name, message: msg, secret: false, createdAt: c.fs.serverTimestamp() });
+          return LOCK.encrypt(msg, pin).then(function (enc) {
+            sealed = enc;
+            var open = c.fs.doc(col), mine = c.fs.doc(col), batch = c.fs.writeBatch(c.db);
+            batch.set(open, { name: name, message: '', secret: false, lock: true, enc: enc, createdAt: c.fs.serverTimestamp() });
+            batch.set(mine, { name: name, message: msg, secret: true, pin: pin, pair: open.id, createdAt: c.fs.serverTimestamp() });
+            return batch.commit();
           });
         }).then(function () {
-          msgIn.value = '';
+          msgIn.value = ''; pinIn.value = '';
           form.querySelector('.gs-count').textContent = '0 / ' + MAX;
-          if (secret) {
-            toast('비밀글을 남겼어요. 오너만 볼 수 있어요.');
-          } else {
-            var empty = listBox.querySelector('.gs-empty');
-            if (empty) empty.remove();
-            listBox.insertBefore(card({ name: name, message: msg, time: '방금' }, true), listBox.firstChild);
-            toast('방명록을 남겼어요!');
-          }
+          var empty = listBox.querySelector('.gs-empty');
+          if (empty) empty.remove();
+          listBox.insertBefore(card(secret ? { name: name, time: '방금', lock: true, enc: sealed }
+                                           : { name: name, message: msg, time: '방금' }, true), listBox.firstChild);
+          toast(secret ? '비밀글을 남겼어요. 비밀번호를 입력하면 볼 수 있어요.' : '방명록을 남겼어요!');
         }).catch(function (err) {
           if (window.console) console.error(err);
           toast('보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');

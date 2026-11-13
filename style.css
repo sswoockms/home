@@ -2318,6 +2318,13 @@ a.bn-item:hover {
   cursor: pointer;
 }
 .gs-secret input { accent-color: var(--c-text); width: 15px; height: 15px; }
+.gs-pin { width: 150px; letter-spacing: 0.3em; }
+.gs-pin::placeholder { letter-spacing: 0; }
+.gs-pin[hidden] { display: none; }
+.gs-gate { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 8px; }
+.gs-gate-t { font-size: 14px; color: var(--c-sub); }
+.gs-gate .gs-pin { width: 120px; padding: 8px 14px; border-color: var(--c-line); }
+.gs-gate.is-busy { opacity: 0.5; pointer-events: none; }
 .gs-form-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 .gs-count { font-size: 12px; color: var(--c-sub); font-variant-numeric: tabular-nums; }
 .gs-send { padding: 10px 24px; font-size: 13px; }

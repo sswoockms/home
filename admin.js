@@ -748,7 +748,7 @@
   /* ---------- 방명록 관리 ---------- */
   function renderGuestbook(panel) {
     panel.appendChild(h('h2', { text: '방명록 관리' }));
-    panel.appendChild(h('p', { class: 'oha-note', text: '비밀글을 포함해 모든 글이 보여요. 답글을 쓰고 저장하면 방문자 화면에 표시돼요.' }));
+    panel.appendChild(h('p', { class: 'oha-note', text: '비밀글을 포함해 모든 글이 보여요. 답글을 쓰고 저장하면 방문자 화면에 표시돼요. 비밀글의 답글은 같은 비밀번호로 잠겨요.' }));
     var list = h('div', null, [h('p', { text: '불러오는 중…' })]);
     panel.appendChild(list);
     var col = (S.guest && S.guest.firebase && S.guest.firebase.collection) || 'guests';
@@ -757,12 +757,16 @@
       return c.fs.getDocs(q).then(function (snap) {
         list.innerHTML = '';
         if (snap.empty) { list.appendChild(h('p', { text: '아직 글이 없어요.' })); return; }
+        var paired = {};
+        snap.forEach(function (d) { var p = d.data().pair; if (p) paired[p] = 1; });
         snap.forEach(function (d) {
           var v = d.data();
+          if (v.lock && paired[d.id]) return;
           var when = v.createdAt && v.createdAt.toDate ? v.createdAt.toDate().toLocaleString('ko-KR') : '';
-          var card = h('div', { class: 'oha-gb' + (v.secret ? ' is-secret' : '') });
+          var tag = v.pair ? '비밀글 · 비밀번호 ' + (v.pin || '') : v.lock ? '잠긴 비밀글 (원문 없음)' : v.secret ? '비밀글' : '';
+          var card = h('div', { class: 'oha-gb' + (tag ? ' is-secret' : '') });
           card.appendChild(h('div', null, [h('b', { text: v.name || '익명' }),
-            v.secret ? h('span', { class: 'oha-tag', text: '비밀글' }) : null,
+            tag ? h('span', { class: 'oha-tag', text: tag }) : null,
             h('small', { text: '  ' + when })]));
           card.appendChild(h('p', { text: v.message || '', style: 'white-space:pre-wrap;margin:6px 0' }));
           var rp = h('textarea', { class: 'oha-ta', placeholder: '답글 (비우고 저장하면 답글이 지워져요)' });
@@ -770,15 +774,25 @@
           var sv = h('button', { class: 'oha-btn', type: 'button', text: '답글 저장' });
           var rm = h('button', { class: 'oha-btn is-bad', type: 'button', text: '글 삭제' });
           sv.onclick = function () {
-            c.fs.updateDoc(c.fs.doc(c.db, col, d.id), { reply: rp.value.trim() })
-              .then(function () { toast('답글을 저장했어요.'); })
+            var text = rp.value.trim();
+            var sealed = (v.pair && text) ? window.LOCK.encrypt(text, v.pin) : Promise.resolve(null);
+            sealed.then(function (enc) {
+              var batch = c.fs.writeBatch(c.db);
+              batch.update(c.fs.doc(c.db, col, d.id), { reply: text });
+              if (v.pair) batch.update(c.fs.doc(c.db, col, v.pair), { replyEnc: enc });
+              return batch.commit();
+            }).then(function () { toast('답글을 저장했어요.'); })
               .catch(function (e) { toast('저장하지 못했어요: ' + e.message, true); });
           };
           rm.onclick = function () {
             if (!confirm('이 글을 지울까요? 되돌릴 수 없어요.')) return;
-            c.fs.deleteDoc(c.fs.doc(c.db, col, d.id)).then(function () { card.remove(); toast('지웠어요.'); })
+            var batch = c.fs.writeBatch(c.db);
+            batch.delete(c.fs.doc(c.db, col, d.id));
+            if (v.pair) batch.delete(c.fs.doc(c.db, col, v.pair));
+            batch.commit().then(function () { card.remove(); toast('지웠어요.'); })
               .catch(function (e) { toast('지우지 못했어요: ' + e.message, true); });
           };
+          if (v.lock) rp.hidden = sv.hidden = true;
           card.appendChild(rp);
           card.appendChild(h('div', { style: 'display:flex;gap:8px;margin-top:8px' }, [sv, rm]));
           list.appendChild(card);

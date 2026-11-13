@@ -1,8 +1,3 @@
-/* data.js — 사이트 내용
-   편집기의 "data.js 내보내기" 로 뽑은 파일이에요.
-   이 파일을 GitHub 저장소에 올리면(커밋) Vercel 이 자동 배포해 사이트에 반영돼요.
-   remote: false 로 두면 이 data.js 가 정본으로 쓰여요. */
-
 window.SITE = {
   "admin": {
     "email": "swoonqx@gmail.com"

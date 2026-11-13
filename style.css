@@ -1,18 +1,9 @@
-/* ==========================================================
-   style.css : 디자인
-   색은 data.js 의 ② colors 에서 바꿔요.
-   - 흰색 + 지정색(point) 한 가지로 표시돼요.
-   - 연한 선, 보조 글자 등은 지정색을 흰색에 섞은 농도로 자동 계산
-   - 항목별로 색을 적으면 그 부분만 따로 바뀌어요
-   ========================================================== */
-
 :root {
-  --point: #2b2b2b;                                   /* 지정색 */
+  --point: #2b2b2b;
   --white: #ffffff;
 
   --c-paper: var(--white);
 
-  /* 부분별 색 (data.js colors 에서 덮어씀 / 비워두면 아래 기본값) */
   --bg:            var(--white);
   --bg-top:        color-mix(in srgb, var(--point) 5%, var(--white));
   --logo:          var(--c-text);
@@ -54,9 +45,6 @@ html, body {
 a { color: inherit; text-decoration: none; }
 ul { list-style: none; }
 
-/* ---------- 지정색 + 흰색 농도 단계 ----------
-   화면(.page)마다 다시 계산해서, 캐릭터/페어 화면은 그 대표색으로 바뀌어요.
-   --t-… 값은 data.js 의 colors.pages 나 캐릭터 theme 에서 들어와요. */
 @property --point { syntax: "<color>"; inherits: true; initial-value: #2b2b2b; }
 
 :root,
@@ -71,21 +59,17 @@ ul { list-style: none; }
   --c-card:      var(--t-card,   var(--white));
 }
 
-/* 색이 바뀔 때 부드럽게 */
 .page {
   background-color: var(--page-bg, transparent);
   transition: --point 0.7s ease, background-color 0.7s ease;
 }
 
-/* ---------- 고정 판 ---------- */
 .viewport {
   position: fixed;
   inset: 0;
-  /* 위쪽은 지정색이 아주 옅게, 아래로 갈수록 흰색 */
   background: linear-gradient(to top, var(--bg) 0%, var(--bg) 12%, var(--bg-top) 75%);
 }
 
-/* 바탕 이미지 레이어 */
 .bg-image {
   position: absolute;
   inset: 0;
@@ -100,7 +84,6 @@ ul { list-style: none; }
 }
 .bg-fade.is-on { display: block; }
 
-/* 흘러가는 효과 */
 .bg-image.is-scroll-tile  { animation: bgTile 30s linear infinite; }
 .bg-image.is-scroll-drift { animation: bgDrift 40s ease-in-out infinite alternate; }
 @keyframes bgTile  { to { background-position: var(--tile, 200px) var(--tile, 200px); } }
@@ -115,13 +98,11 @@ ul { list-style: none; }
   transform-origin: center center;
 }
 
-/* 화면(메인홈, Oc, Pair, Owner, Guest) 하나하나 */
 .page { position: absolute; inset: 0; }
 .page.is-enter { animation: fadeIn 0.45s ease both; }
 .page[data-page="oc"]   { --fade: var(--oc-fade, 1.2s); }
 .page[data-page="pair"] { --fade: var(--pr-fade, 1.2s); }
 
-/* 메인홈 배치 : 로고 | 일러스트 | 메뉴 */
 .page-home {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -131,7 +112,6 @@ ul { list-style: none; }
 }
 
 .col { display: flex; align-items: center; }
-/* 로고 : 왼쪽 위 (아래쪽은 뮤직 플레이어 자리) */
 .col-left {
   align-self: stretch;
   align-items: flex-start;
@@ -140,7 +120,6 @@ ul { list-style: none; }
 }
 .col-right { justify-content: flex-start; }
 
-/* ---------- 로고 ---------- */
 .logo {
   font-weight: inherit;
   animation: fadeUp 0.9s ease both 0.2s;
@@ -158,7 +137,6 @@ ul { list-style: none; }
   color: var(--logo);
 }
 
-/* ---------- 메인 일러스트 ---------- */
 .illust {
   position: relative;
   padding: 14px;
@@ -171,7 +149,7 @@ ul { list-style: none; }
 .illust img {
   display: block;
   max-width: 680px;
-  max-height: var(--illu-size, 600px);   /* data.js 의 illust.size 로 조절 */
+  max-height: var(--illu-size, 600px);
   width: auto;
   height: auto;
 }
@@ -189,7 +167,6 @@ ul { list-style: none; }
   letter-spacing: 0.3em;
 }
 
-/* ---------- 투명 오브젝트 모드 (data.js 에서 frame: false) ---------- */
 .illust--object {
   padding: 0;
   background: none;
@@ -213,7 +190,6 @@ ul { list-style: none; }
   height: var(--illu-size, 600px);
 }
 
-/* ---------- 메뉴 ---------- */
 .menu {
   width: 300px;
   display: flex;
@@ -261,7 +237,6 @@ ul { list-style: none; }
 }
 .menu-item:hover .menu-name { transform: translateX(-6px); }
 
-/* ---------- 뮤직 플레이어 ---------- */
 .mp {
   position: fixed;
   left: 28px;
@@ -332,7 +307,6 @@ ul { list-style: none; }
   padding: 14px 14px 6px;
 }
 
-/* 회전하는 디스크 (cover 이미지가 있으면 그 이미지로) */
 .mp-disc {
   position: relative;
   flex: none;
@@ -431,7 +405,6 @@ ul { list-style: none; }
 .mp-vol svg { width: 14px; height: 14px; }
 .mp-vol .mp-range { flex: none; width: 70px; }
 
-/* ---------- 캘린더 (플레이어와 같은 창 모양) ---------- */
 .cal { position: absolute; width: 290px; animation-delay: 1s; }
 .cal--right-top    { left: auto; right: 56px; top: 28px; bottom: auto; }
 .cal--right-bottom { left: auto; right: 56px; bottom: 40px; }
@@ -477,7 +450,7 @@ ul { list-style: none; }
 .cal .is-sat { color: color-mix(in srgb, var(--mp-text) 55%, #4b6fd2); }
 .cal .cal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--mp-text); }
 .cal .cal-day.is-sel { background: var(--mp-btn); color: var(--mp-btn-icon); }
-.cal .cal-day.has-ev::after {           /* 기념일 점 */
+.cal .cal-day.has-ev::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -534,11 +507,9 @@ ul { list-style: none; }
 .cal-dd.is-today { background: var(--mp-btn); border-color: var(--mp-btn); color: var(--mp-btn-icon); }
 .cal.is-folded .cal-body { display: none; }
 
-/* 접은 상태 : 컨트롤만 남김 */
 .mp.is-folded .mp-main,
 .mp.is-folded .mp-bar { display: none; }
 
-/* 새 창(팝업)으로 분리했을 때 */
 .mp-popup-body { background: var(--bg); }
 .mp-popup-body .mp--popup { background: var(--mp-bg); }
 .mp--popup {
@@ -557,9 +528,6 @@ ul { list-style: none; }
 
 @keyframes mpSpin { to { transform: rotate(360deg); } }
 
-/* ==========================================================
-   Oc 페이지 (oc.html)
-   ========================================================== */
 [hidden] { display: none !important; }
 
 .stage--oc { display: block; padding: 0; }
@@ -570,7 +538,6 @@ ul { list-style: none; }
 .oc-list.is-open    { animation: fadeIn 0.5s ease both; }
 .oc-profile.is-open { animation: fadeIn 0.4s ease both; }
 
-/* ---------- 목록 ---------- */
 .oc-head {
   position: absolute;
   left: 110px;
@@ -682,7 +649,6 @@ ul { list-style: none; }
 .oc-card:hover .oc-card-img img { filter: none; transform: scale(1.03); }
 .oc-card:hover .oc-card-meta { border-color: var(--c-accent); }
 
-/* ---------- 프로필 ---------- */
 .pf-back {
   position: absolute;
   left: 44px;
@@ -701,7 +667,6 @@ ul { list-style: none; }
 }
 .pf-back:hover { color: var(--c-text); border-color: var(--c-accent); border-style: solid; }
 
-/* 뒤에 옅게 깔리는 스탠딩 */
 .pf-bgstand {
   position: absolute;
   left: 640px;
@@ -722,7 +687,6 @@ ul { list-style: none; }
 .pf-bgstand img.is-in { animation: bgStandIn calc(var(--fade) * 1.4) ease both; }
 @keyframes bgStandIn { from { opacity: 0; transform: scale(1.04); } to { opacity: var(--bgstand-op); transform: scale(1); } }
 
-/* 의상 / 버전 바꾸기 */
 .pf-variants {
   position: absolute;
   left: 44px;
@@ -778,7 +742,6 @@ ul { list-style: none; }
 .is-active > .pf-var .pf-var-dot { background: var(--c-accent); border-color: var(--c-accent); }
 .is-active > .pf-var .pf-var-thumb { border: 2px solid var(--c-accent); filter: none; opacity: 1; }
 
-/* 스탠딩 */
 .pf-stand {
   position: absolute;
   left: 180px;
@@ -820,7 +783,6 @@ ul { list-style: none; }
   animation: standIn var(--fade) ease both;
 }
 
-/* 오른쪽 정보 패널 */
 .pf-panel {
   position: absolute;
   left: 900px;
@@ -833,7 +795,6 @@ ul { list-style: none; }
   animation: fadeUp 0.8s ease both 0.25s;
 }
 
-/* 버전을 바꿨을 때 본문이 다시 나타나는 효과 */
 .pf-panel.is-swap { animation: panelSwap 0.6s ease both; }
 @keyframes panelSwap {
   from { opacity: 0; transform: translateX(14px); }
@@ -874,7 +835,6 @@ ul { list-style: none; }
   color: var(--c-text);
 }
 
-/* 오른쪽 위 이미지 (진영 로고, SD) */
 .pf-badge {
   flex: none;
   display: flex;
@@ -905,7 +865,6 @@ ul { list-style: none; }
   color: var(--c-sub);
 }
 
-/* 능력치 막대 */
 .pf-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -945,7 +904,6 @@ ul { list-style: none; }
   color: var(--c-sub);
 }
 
-/* 탭 */
 .pf-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -969,7 +927,6 @@ ul { list-style: none; }
 .pf-tab:hover { color: var(--c-text); }
 .pf-tab.is-active { color: var(--c-text); border-color: var(--c-accent); }
 
-/* 탭 내용 (길면 이 안에서 스크롤) */
 .pf-body {
   flex: 1;
   min-height: 0;
@@ -980,7 +937,6 @@ ul { list-style: none; }
 }
 
 .pf-sec { margin-bottom: 38px; animation: fadeUp 0.6s ease both; }
-/* 제목 바가 없는 섹션 : 위 여백 없이 바로 내용 */
 .pf-sec--plain > :first-child { margin-top: 0; }
 
 .pf-sec-head {
@@ -994,7 +950,7 @@ ul { list-style: none; }
   color: var(--c-on-accent);
   box-shadow: 6px 6px 0 var(--c-soft);
 }
-.pf-sec-head::before {          /* 제목 바 위의 얇은 선 */
+.pf-sec-head::before {
   content: "";
   position: absolute;
   left: 0;
@@ -1033,7 +989,6 @@ ul { list-style: none; }
 .pf-rows dt { font-weight: 700; color: var(--c-sub); }
 .pf-rows dd { font-weight: 500; color: var(--c-text); white-space: pre-line; }
 
-/* 관계 자동 목록 */
 .rel { margin-bottom: 30px; }
 .rel-group + .rel-group { margin-top: 26px; }
 
@@ -1057,7 +1012,6 @@ ul { list-style: none; }
   color: var(--c-sub);
 }
 
-/* 가로로 나열 (많으면 오른쪽으로 스크롤) */
 .rel-row {
   display: flex;
   gap: 12px;
@@ -1068,7 +1022,6 @@ ul { list-style: none; }
   scrollbar-color: var(--c-line) transparent;
 }
 
-/* 세로로 긴 카드 */
 .rel-card {
   position: relative;
   flex: none;
@@ -1096,7 +1049,6 @@ a.rel-card:hover {
 .rel-img.is-empty { background-color: var(--c-soft); }
 a.rel-card:hover .rel-img { transform: scale(1.05); }
 
-/* 아래쪽 이름이 잘 보이도록 흰색 그라데이션 */
 .rel-shade {
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -1158,7 +1110,6 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
   text-overflow: ellipsis;
 }
 
-/* 갤러리 */
 .pf-gallery {
   display: grid;
   grid-template-columns: repeat(var(--cols, 3), 1fr);
@@ -1198,7 +1149,6 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
 .pf-gal-item:hover .pf-gal-cap { opacity: 1; }
 .pf-gal-empty { margin-top: 4px; font-size: 13px; color: var(--c-sub); }
 
-/* 갤러리 크게 보기 (화면 전체) */
 .lb {
   position: fixed;
   inset: 0;
@@ -1265,11 +1215,6 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
   color: var(--c-sub);
 }
 
-/* ==========================================================
-   Pair 페이지 (pair.html)
-   ========================================================== */
-
-/* ---------- 목록 ---------- */
 .pr-grid {
   position: absolute;
   left: 110px;
@@ -1290,14 +1235,12 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
 .pr-card .rel-label { top: 14px; left: 14px; font-size: 12px; padding: 4px 12px; }
 .pr-card .rel-text  { bottom: 20px; }
 
-/* ---------- 페어 화면 ---------- */
 .pr-profile {
   position: absolute;
   inset: 0;
 }
 .pr-profile.is-open { animation: fadeIn 0.4s ease both; }
 
-/* 커버 */
 .pr-cover {
   position: relative;
   height: 1000px;
@@ -1318,7 +1261,6 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
   box-shadow: 0 20px 50px color-mix(in srgb, var(--point) 8%, transparent);
 }
 
-/* 양쪽 클로즈업 (최대 4인 : 한쪽에 2명까지 위아래로) */
 .pr-side {
   position: absolute;
   z-index: 1;
@@ -1350,7 +1292,6 @@ a.rel-card:hover .rel-img { transform: scale(1.05); }
   background-color: color-mix(in srgb, var(--c-soft) 60%, transparent);
 }
 
-/* 누르면 프로필로 : 마우스를 올리면 살짝 떠오르고 안내 표시 */
 a.pr-portrait { cursor: pointer; }
 a.pr-portrait:hover .pr-portrait-img {
   transform: translateY(-4px);
@@ -1392,7 +1333,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-portrait-name strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--c-text); }
 .pr-portrait-name span   { font-size: 11px; font-weight: 600; letter-spacing: 0.24em; color: var(--c-sub); }
 
-/* 한쪽에 2명일 때 : 작게 위아래로, 이름은 사진 위에 */
 .pr-side.is-stacked { width: 400px; }
 .pr-side.is-stacked .pr-portrait-img { height: 262px; border-radius: 28px; }
 .pr-side.is-stacked .pr-portrait-name {
@@ -1413,7 +1353,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-side--l.is-stacked .pr-portrait-go { right: 14px; bottom: auto; top: 14px; }
 .pr-side--r.is-stacked .pr-portrait-go { right: auto; left: 14px; bottom: auto; top: 14px; }
 
-/* 뒤의 큰 필기체 글자 */
 .pr-script {
   position: absolute;
   z-index: 2;
@@ -1431,7 +1370,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 }
 .no-script-font .pr-script { font-family: var(--font); font-style: italic; font-weight: 800; font-size: 150px; }
 
-/* 가운데 페어 스탠딩 */
 .pr-stand {
   position: absolute;
   z-index: 3;
@@ -1453,7 +1391,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-stand img.is-in { animation: standIn var(--fade) cubic-bezier(.2,.7,.2,1) both 0.2s; }
 .pf-stand-ph.pr-stand-ph { width: 360px; height: 780px; margin-bottom: 30px; background: color-mix(in srgb, var(--c-card) 70%, transparent); }
 
-/* 왼쪽 아래 페어 이름 */
 .pr-title {
   position: absolute;
   z-index: 4;
@@ -1495,7 +1432,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   color: var(--c-text);
 }
 
-/* 동그란 도장 */
 .pr-stamp {
   position: absolute;
   z-index: 4;
@@ -1526,7 +1462,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 }
 .pr-stamp span { font-size: 11px; font-weight: 500; line-height: 1.4; white-space: pre-line; color: var(--c-sub); }
 .no-script-font .pr-stamp strong { font-family: var(--font); font-size: 18px; font-weight: 800; }
-/* 스탠딩 버전이 2개 이상이면 도장을 눌러서 바꾸기 */
 .pr-stamp.is-clickable {
   cursor: pointer;
   transition: transform 0.3s cubic-bezier(.3,1.4,.5,1), box-shadow 0.3s;
@@ -1553,16 +1488,13 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   color: var(--c-text) !important;
 }
 
-/* 스탠딩이 바뀔 때 : 흐려지며 사라졌다가 새 그림이 떠오름 */
 .pr-stand > * { transition: opacity 0.28s ease, filter 0.28s ease, transform 0.28s ease; }
 .pr-stand.is-leaving > * { opacity: 0 !important; filter: blur(6px); transform: translateY(10px); animation: none !important; }
 
-/* 뒤 글자가 바뀔 때 */
 .pr-script.is-swap { animation: fadeIn 0.8s ease both; }
 
 @keyframes stampIn { from { opacity: 0; transform: rotate(-30deg) scale(0.6); } to { opacity: 1; transform: rotate(-8deg) scale(1); } }
 
-/* 오른쪽 아래 숫자 */
 .pr-date {
   position: absolute;
   z-index: 4;
@@ -1579,7 +1511,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-date-small { margin-top: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.2em; color: var(--c-sub); }
 .no-script-font .pr-date-sub { font-family: var(--font); font-size: 22px; font-style: italic; }
 
-/* 테두리 바깥 장식 점 */
 .pr-dots {
   position: absolute;
   top: 50%;
@@ -1594,7 +1525,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-dots--l { left: 10px; }
 .pr-dots--r { right: 10px; }
 
-/* ---------- 아래쪽 탭 버튼 ---------- */
 .pr-nav {
   position: absolute;
   left: 120px;
@@ -1617,7 +1547,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-nav-btn:hover { color: var(--c-text); border-color: var(--c-accent); transform: translateY(-1px); }
 .pr-nav-btn.is-active { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); }
 
-/* ---------- 탭 내용 칸 (오른쪽에서 열림) ---------- */
 .pr-detail {
   position: absolute;
   z-index: 6;
@@ -1659,7 +1588,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 }
 .pr-body { padding-top: 0; }
 
-/* 내용 칸이 열리면 : 클로즈업, 도장, 숫자는 사라지고 스탠딩은 왼쪽으로 */
 .pr-side,
 .pr-stamp,
 .pr-date,
@@ -1675,12 +1603,10 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .pr-stand { transition: left 0.7s cubic-bezier(.2,.7,.2,1), opacity 0.5s ease; }
 .is-detail .pr-stand { left: 340px; }
 
-/* 타임라인처럼 넓은 탭 : 내용 칸이 액자 전체로 넓어지고 스탠딩은 잠시 숨김 */
 .is-wide .pr-stand,
 .is-wide .pr-title { opacity: 0; }
 .is-wide .pr-script { opacity: 0.25; }
 
-/* ---------- 타임라인 ---------- */
 .tl-switch {
   display: flex;
   flex-wrap: wrap;
@@ -1700,7 +1626,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .tl-switch-btn:hover { color: var(--c-text); border-color: var(--c-accent); }
 .tl-switch-btn.is-active { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); }
 
-/* 타임라인 바꿀 때 : 흐려지며 사라졌다가 다시 그려짐 */
 .tl-stage { transition: opacity 0.25s ease, transform 0.25s ease; }
 .tl-stage.is-leaving { opacity: 0; transform: translateX(-16px); }
 
@@ -1719,7 +1644,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   min-width: 100%;
 }
 
-/* 가로선 : 왼쪽에서 오른쪽으로 그려짐 */
 .tl-axis {
   position: absolute;
   left: 0; right: 0;
@@ -1741,7 +1665,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .tl-end--l { left: -4px; }
 .tl-end--r { right: -4px; animation-delay: 0.8s; }
 
-/* 사건 하나 : 점 + 막대 + 글자 */
 .tl-item {
   position: absolute;
   top: 50%;
@@ -1806,7 +1729,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .tl-item.is-active .tl-dot { box-shadow: 0 0 0 7px color-mix(in srgb, var(--point) 14%, transparent); }
 .tl-item.is-active .tl-label strong { font-weight: 800; }
 
-/* 아래쪽 설명 칸 */
 .tl-info {
   min-height: 120px;
   margin-top: 6px;
@@ -1819,9 +1741,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .tl-info-title { display: block; margin-top: 6px; font-size: 20px; font-weight: 800; color: var(--c-text); }
 .tl-info-text  { margin-top: 8px; font-size: 15px; line-height: 1.75; white-space: pre-line; color: var(--c-text); }
 
-/* ==========================================================
-   Owner 페이지 (owner.html)
-   ========================================================== */
 .ow {
   position: absolute;
   inset: 0;
@@ -1832,7 +1751,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   animation: fadeIn 0.5s ease both;
 }
 
-/* 왼쪽 : 제목 + 프로필 카드 */
 .ow-left { display: flex; flex-direction: column; min-height: 0; }
 .ow-left .oc-title { margin-top: 26px; }
 
@@ -1848,7 +1766,7 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   flex-direction: column;
   align-items: center;
   text-align: center;
-  overflow: hidden;                 /* 스크롤 없음 */
+  overflow: hidden;
   animation: fadeUp 0.8s ease both 0.15s;
 }
 
@@ -1887,12 +1805,11 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   white-space: pre-line;
   color: var(--c-text);
   display: -webkit-box;
-  -webkit-line-clamp: 4;           /* 소개는 최대 4줄 */
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* 탭 버튼 줄 : 탭 옆에 링크 버튼 */
 .ow-top {
   display: flex;
   align-items: center;
@@ -1907,7 +1824,7 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
   align-items: center;
   gap: 8px;
 }
-.ow-nav:not(:empty) + .ow-links:not(:empty)::before {   /* 탭과 링크 사이 구분선 */
+.ow-nav:not(:empty) + .ow-links:not(:empty)::before {
   content: "";
   width: 1px;
   height: 22px;
@@ -1945,7 +1862,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 .ow-link:hover { background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on-accent); transform: translateY(-2px); }
 .ow-link:hover i { background: color-mix(in srgb, var(--c-card) 20%, transparent); }
 
-/* 오른쪽 : 탭 + 내용 칸 */
 .ow-right { display: flex; flex-direction: column; min-height: 0; padding-top: 4px; }
 .ow-nav {
   display: flex;
@@ -1969,7 +1885,6 @@ a.pr-portrait:hover .pr-portrait-go { opacity: 1; transform: none; }
 }
 .ow-panel.is-swap .pr-body { animation: fadeUp 0.5s ease both; }
 
-/* ---------- 배너 (왼쪽 카드 안 / 넘치면 자동으로 작아짐) ---------- */
 .ow-banners {
   flex: 1;
   min-height: 0;
@@ -2010,7 +1925,7 @@ a.bn-item:hover {
 .bn-item.is-text {
   display: grid;
   place-items: center;
-  aspect-ratio: 5 / 1;             /* 200×40 배너와 같은 비율 */
+  aspect-ratio: 5 / 1;
   padding: 0 6px;
   border: 1px dashed var(--c-line);
   line-height: 1.2;
@@ -2023,9 +1938,6 @@ a.bn-item:hover {
   text-overflow: ellipsis;
 }
 
-
-
-/* ---------- TRPG 로그 백업 ---------- */
 .lg {
   display: grid;
   grid-template-columns: 270px 1fr;
@@ -2145,7 +2057,6 @@ a.bn-item:hover {
 .lg-body { padding: 18px 26px 30px; }
 .lg-body > * { animation: fadeUp 0.4s ease both; }
 
-/* 대사 말풍선 */
 .lg-say {
   display: flex;
   align-items: flex-start;
@@ -2181,7 +2092,6 @@ a.bn-item:hover {
   color: var(--c-text);
   box-shadow: 0 2px 6px color-mix(in srgb, var(--point) 5%, transparent);
 }
-/* 오른쪽 말풍선 (speakers 에서 side: "right") */
 .lg-say.is-right { flex-direction: row-reverse; }
 .lg-say.is-right .lg-col { align-items: flex-end; }
 .lg-say.is-right .lg-name { margin: 0 4px 4px 0; }
@@ -2190,10 +2100,8 @@ a.bn-item:hover {
   background: var(--c-accent);
   color: var(--c-on-accent);
 }
-/* GM / KP 대사 */
 .lg-say.is-gm .lg-bubble { background: transparent; border: 1px dashed var(--c-line); box-shadow: none; }
 
-/* 지문, 장면, 시스템 */
 .lg-descline {
   margin: 16px auto 4px;
   max-width: 86%;
@@ -2226,9 +2134,6 @@ a.bn-item:hover {
   color: var(--c-sub);
 }
 
-/* ==========================================================
-   Guest 페이지 (guest.html)
-   ========================================================== */
 .gs-card { align-items: stretch; text-align: left; }
 .gs-intro {
   font-size: 15px;
@@ -2277,7 +2182,6 @@ a.bn-item:hover {
 .gs-link:hover { border-color: var(--c-accent); transform: translateY(-2px); }
 .gs-link:hover i { background: var(--c-accent); color: var(--c-on-accent); }
 
-/* 글쓰기 칸 */
 .gs-form {
   padding: 20px;
   border-radius: 24px;
@@ -2340,7 +2244,6 @@ a.bn-item:hover {
 }
 .bn-btn:hover { transform: translateY(-1px); opacity: 0.85; }
 
-/* 글 목록 */
 .gs-list { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
 .gs-item {
   padding: 18px 22px;
@@ -2379,7 +2282,6 @@ a.bn-item:hover {
   color: var(--c-sub);
 }
 
-/* 외부 위젯 */
 .gs-widget iframe {
   display: block;
   width: 100%;
@@ -2388,7 +2290,6 @@ a.bn-item:hover {
   background: var(--c-card);
 }
 
-/* 알림 */
 .ow-toast {
   position: fixed;
   left: 50%;
@@ -2408,18 +2309,11 @@ a.bn-item:hover {
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-/* ---------- 등장 효과 ---------- */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-
-/* ==========================================================
-   📱 모바일 배치 (화면 너비 820px 이하 / data.js 의 mobileWidth 로 조절)
-   - 판을 줄이는 대신 위에서 아래로 쌓아서 보여줘요.
-   - PC 화면에는 아무 영향이 없어요.
-   ========================================================== */
 html.is-mobile,
 html.is-mobile body { overflow: hidden; }
 
@@ -2445,10 +2339,9 @@ html.is-mobile .page {
   inset: auto;
   min-height: 100vh;
   min-height: 100dvh;
-  padding-bottom: 130px;              /* 아래 뮤직 플레이어 자리 */
+  padding-bottom: 130px;
 }
 
-/* ---------- 뮤직 플레이어 : 아래쪽 바 ---------- */
 html.is-mobile .mp:not(.cal) {
   left: 10px !important;
   right: 10px !important;
@@ -2461,7 +2354,6 @@ html.is-mobile .mp:not(.cal) .mp-head { cursor: default; padding: 6px 6px 6px 14
 html.is-mobile .mp [data-act="pop"] { display: none; }
 html.is-mobile .mp.is-folded:not(.cal) .mp-ctrl { padding: 6px 12px 8px; }
 
-/* ---------- 메인홈 ---------- */
 html.is-mobile .page-home {
   display: flex;
   flex-direction: column;
@@ -2491,14 +2383,12 @@ html.is-mobile .cal {
 }
 html.is-mobile .cal .mp-head { cursor: default; }
 
-/* ---------- 공통 : 목록 화면 제목 ---------- */
 html.is-mobile .oc-list,
 html.is-mobile .oc-profile { position: static; }
 html.is-mobile .oc-head { position: static; padding: 40px 20px 0; }
 html.is-mobile .oc-title { font-size: 52px; margin-top: 18px; }
 html.is-mobile .oc-sub { font-size: 11px; }
 
-/* ---------- Oc 목록 ---------- */
 html.is-mobile .oc-grid {
   position: static;
   grid-template-columns: 1fr 1fr;
@@ -2509,7 +2399,6 @@ html.is-mobile .oc-grid {
 html.is-mobile .oc-card-img { width: 100%; height: auto; aspect-ratio: 3 / 4; }
 html.is-mobile .oc-card-name { font-size: 17px; }
 
-/* ---------- Oc 프로필 : 스탠딩 → 버전 버튼 → 정보 ---------- */
 html.is-mobile .oc-profile:not([hidden]) { display: flex; flex-direction: column; }
 html.is-mobile .pf-back,
 html.is-mobile .pr-profile .pf-back {
@@ -2566,7 +2455,7 @@ html.is-mobile .pf-tabs {
   position: sticky;
   top: 0;
   z-index: 5;
-  padding: 12px 0 14px 60px;       /* 왼쪽은 ‹ 버튼 자리 */
+  padding: 12px 0 14px 60px;
   margin: 30px -20px 0;
   padding-right: 20px;
   background: color-mix(in srgb, var(--c-card) 92%, transparent);
@@ -2581,7 +2470,6 @@ html.is-mobile .pf-rows { grid-template-columns: 96px 1fr; font-size: 14px; }
 html.is-mobile .pf-gallery { grid-template-columns: repeat(2, 1fr); }
 html.is-mobile .rel-card { width: 128px; height: 210px; }
 
-/* ---------- Pair 목록 ---------- */
 html.is-mobile .pr-grid {
   position: static;
   display: grid;
@@ -2593,7 +2481,6 @@ html.is-mobile .pr-grid {
 html.is-mobile .rel-card.pr-card { width: 100%; height: auto; aspect-ratio: 3 / 5; border-radius: 20px; }
 html.is-mobile .pr-card .rel-name { font-size: 19px; }
 
-/* ---------- Pair 화면 : 탭 → 스탠딩 → 이름 → 클로즈업 → 내용 ---------- */
 html.is-mobile .pr-profile { position: static; }
 html.is-mobile .pr-cover {
   height: auto;
@@ -2613,7 +2500,7 @@ html.is-mobile .pr-nav {
   flex-wrap: nowrap;
   overflow-x: auto;
   margin: 0 -12px 12px;
-  padding: 10px 12px 10px 66px;    /* 왼쪽은 ‹ 버튼 자리 */
+  padding: 10px 12px 10px 66px;
   background: color-mix(in srgb, var(--c-card) 88%, transparent);
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -2672,10 +2559,9 @@ html.is-mobile .pr-title {
   bottom: auto;
   max-width: none;
   min-height: 118px;
-  padding: 4px 124px 8px 4px;      /* 오른쪽은 도장 자리 */
+  padding: 4px 124px 8px 4px;
 }
 html.is-mobile .pr-name { font-size: 36px; }
-/* 도장 : 페어 이름 오른쪽 */
 html.is-mobile .pr-stamp {
   order: 2;
   grid-row: 2;
@@ -2704,7 +2590,6 @@ html.is-mobile .pr-date-big { font-size: 64px; }
 html.is-mobile .pr-date-sub { font-size: 30px; }
 html.is-mobile .pr-dots { display: none; }
 
-/* 모바일에서는 탭을 눌러도 커버는 그대로 두고, 아래에 내용이 이어져요 */
 html.is-mobile .is-detail .pr-side,
 html.is-mobile .is-detail .pr-stamp,
 html.is-mobile .is-detail .pr-date,
@@ -2730,13 +2615,11 @@ html.is-mobile .pr-detail {
 html.is-mobile .is-detail .pr-detail { display: block; }
 html.is-mobile .pr-detail-title { font-size: 26px; margin-bottom: 18px; }
 
-/* 타임라인 : 옆으로 넘겨 보기 */
 html.is-mobile .tl-track { height: 380px; }
 html.is-mobile .tl-label { width: 120px; }
 html.is-mobile .tl-label strong { font-size: 13px; }
 html.is-mobile .tl-info { padding: 18px; }
 
-/* 로그 : 목록은 옆으로, 로그는 아래로 */
 html.is-mobile .lg { display: flex; flex-direction: column; height: auto; gap: 12px; }
 html.is-mobile .lg-list { flex-direction: row; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; }
 html.is-mobile .lg-card { width: 190px; }
@@ -2746,7 +2629,6 @@ html.is-mobile .lg-body { padding: 14px 14px 24px; }
 html.is-mobile .lg-col { max-width: 84%; }
 html.is-mobile .lg-embed { height: 60vh; }
 
-/* ---------- Owner / Guest ---------- */
 html.is-mobile .ow {
   position: static;
   display: flex;
@@ -2765,17 +2647,12 @@ html.is-mobile .gs-input { width: 100%; }
 html.is-mobile .gs-form-row { flex-wrap: wrap; }
 html.is-mobile .gs-links { margin-top: 18px; }
 
-/* 갤러리 크게 보기 */
 html.is-mobile .lb-nav { width: 42px; height: 42px; margin-top: -21px; }
 html.is-mobile .lb-prev { left: 8px; }
 html.is-mobile .lb-next { right: 8px; }
 html.is-mobile .lb-fig,
 html.is-mobile .lb-fig img { max-width: 92vw; }
 
-
-/* ==========================================================
-   추가 화면 : Works
-   ========================================================== */
 .wk-lead { margin: 0 0 22px; }
 .wk-grid {
   display: grid;
@@ -2832,7 +2709,6 @@ a.wk-card:hover {
 
 html.is-mobile .wk-grid { grid-template-columns: 1fr; }
 
-/* ---------- 메인 자기소개 ---------- */
 .col-left { flex-direction: column; align-items: flex-start; justify-content: flex-start; padding-top: 120px; }
 .col-left .logo-text { font-size: 64px; letter-spacing: -0.03em; }
 .me-hello {
@@ -2878,19 +2754,16 @@ html.is-mobile .wk-grid { grid-template-columns: 1fr; }
   background: color-mix(in srgb, var(--c-card) 82%, transparent); color: var(--c-sub);
 }
 
-/* 페어 커버 : 뒤 필기체 글자를 클로즈업 / 스탠딩 뒤로 보내기 */
 .pr-script { z-index: 0; }
 .pr-script { z-index: 0 !important; }
 .pr-side   { z-index: 1 !important; }
 .pr-stand  { z-index: 3 !important; }
 
-/* ---------- 태그 모아보기 ---------- */
 .tagbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; max-width: 520px; }
 .wk-tags em { cursor: pointer; transition: background 0.2s, color 0.2s; }
 .wk-tags em:hover { background: var(--c-accent); color: var(--c-on-accent); }
 [hidden].oc-card, [hidden].rel-card { display: none !important; }
 
-/* ---------- 캘린더 위젯 : 일정 수에 따라 진하게 ---------- */
 a.mp-label { text-decoration: none; cursor: pointer; }
 a.mp-label:hover { color: var(--mp-text); }
 .cal .cal-day.is-d1 { background: color-mix(in srgb, var(--mp-text) 10%, transparent); }
@@ -2898,7 +2771,6 @@ a.mp-label:hover { color: var(--mp-text); }
 .cal .cal-day.is-d3 { background: color-mix(in srgb, var(--mp-text) 38%, transparent); }
 .cal .cal-day.is-d4 { background: color-mix(in srgb, var(--mp-text) 62%, transparent); color: var(--mp-btn-icon); }
 
-/* ---------- Log ---------- */
 .lgp-lock {
   position: absolute; top: 12px; right: 12px;
   padding: 4px 9px; border-radius: 6px;
@@ -2941,7 +2813,6 @@ a.lgp-member:hover { transform: translateY(-2px); box-shadow: 0 10px 24px color-
 .lgp-in:focus { border-color: var(--c-accent); }
 .lgp-gate-e { min-height: 18px; font-size: 13px; color: #b3261e; }
 
-/* ---------- Calendar ---------- */
 .cl-nav { align-items: center; }
 .cl-month { min-width: 110px; text-align: center; font-size: 20px; font-weight: 800; letter-spacing: 0.04em; color: var(--c-title); font-variant-numeric: tabular-nums; }
 .cl-panel { display: flex; flex-direction: column; gap: 22px; }
@@ -2983,7 +2854,6 @@ html.is-mobile .cl-cell { min-height: 54px; padding: 6px 4px; align-items: cente
 html.is-mobile .cl-ev, html.is-mobile .cl-more { display: none; }
 html.is-mobile .lgp-frame { height: 70vh; }
 
-/* ---------- Owner : Playlist ---------- */
 .page[data-page="owner"] { overflow: hidden; }
 .ow { transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s; }
 .page.is-pl .ow { transform: translateX(-100%); visibility: hidden; transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s 0.7s; }

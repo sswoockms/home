@@ -1,18 +1,9 @@
-/* ==========================================================
-   admin.js : 사이트 안 관리자 편집기
-   ----------------------------------------------------------
-   - 주소 뒤에 #admin 을 붙여 열어요.   예) https://내사이트/#admin
-   - 구글 로그인 → data.js 의 admin.email 과 같은 계정만 편집할 수 있어요.
-   - 저장하면 Firestore(site/config)에 올라가고, 이미지는 Storage 에 올라가요.
-   - 방명록(비밀글 읽기 / 답글 / 삭제)도 여기서 관리해요.
-   ※ 진짜 권한 확인은 Firebase 보안 규칙이 해요. (firestore.rules, storage.rules)
-   ========================================================== */
 (function () {
   'use strict';
 
   var VER = (window.SITE && window.SITE.firebaseSdk) || '13.0.0';
   var BASE = 'https://www.gstatic.com/firebasejs/' + VER + '/';
-  var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1, remote: 1 };      /* 편집기에서 건드리지 않는 항목 */
+  var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1, remote: 1 };
   var ORDER = ['title', 'home', 'logo', 'illust', 'menu', 'owner', 'works', 'oc', 'pair', 'log', 'guest',
                'calendar', 'music', 'colors', 'bgImage', 'mobileWidth'];
   var TAB_NAME = {
@@ -40,7 +31,6 @@
   var S = window.SITE || {};
   var st = { user: null, fb: null, draft: null, dirty: false, tab: null, root: null, view: 'site', busy: false,
              preview: window.innerWidth >= 1000, pvMobile: false, pvFrame: null, pvBody: null, pvRoute: '', pvTimer: null, pvN: 0 };
-  /* 편집 탭 → 미리보기에서 보여줄 화면 */
   var TAB_ROUTE = { home: '', logo: '', illust: '', menu: '', title: '', works: 'works', oc: 'oc', pair: 'pair',
                     owner: 'owner', guest: 'guest', log: 'log', calendar: 'calendar', __gb: 'guest' };
 
@@ -76,7 +66,6 @@
     schedulePreview();
   }
 
-  /* ---------- 실시간 미리보기 ---------- */
   function pvReload() {
     try {
       var w = st.pvFrame.contentWindow, u = new URL(w.location.href);
@@ -101,7 +90,7 @@
     if (!st.pvFrame || !st.pvBody) return;
     var w = st.pvMobile ? 390 : 1280;
     var pw = st.pvBody.clientWidth, ph = st.pvBody.clientHeight;
-    if (!pw || !ph) return;                 /* 아직 화면에 안 나온 상태 → 크기가 잡히면 다시 계산 */
+    if (!pw || !ph) return;
     var s = Math.min(pw / w, 1);
     st.pvFrame.style.width = w + 'px';
     st.pvFrame.style.height = (ph / s) + 'px';
@@ -141,7 +130,6 @@
     return pane;
   }
 
-  /* ---------- Firebase 연결 (index.html 의 OHFB 공유) ---------- */
   function fb() {
     if (st.fb) return st.fb;
     var cfg = window.SITE_FB;
@@ -161,7 +149,6 @@
     return !!(st.user && adminEmail() && (st.user.email || '').toLowerCase() === adminEmail());
   }
 
-  /* ---------- 스타일 ---------- */
   function injectCss() {
     if ($('#oha-css')) return;
     var point = ((S.colors || {}).point) || '#2b2b2b';
@@ -228,20 +215,17 @@
     document.head.appendChild(h('style', { id: 'oha-css', text: css }));
   }
 
-  /* ---------- 이미지 올리기 ---------- */
   function upload(file) {
     if (file.size > 10 * 1024 * 1024) return Promise.reject(new Error('파일이 10MB 보다 커요.'));
     return fb().then(function (c) {
       var name = Date.now() + '-' + file.name.replace(/[^\w.\-]/g, '_');
       var r = c.store.ref(c.sg, 'uploads/' + name);
-      /* 파일 이름에 시간이 붙어 매번 새 이름이라, 브라우저가 1년 동안 다시 받지 않게 캐시 설정 */
       return c.store.uploadBytes(r, file, { contentType: file.type, cacheControl: 'public, max-age=31536000, immutable' }).then(function () {
         return c.store.getDownloadURL(r);
       });
     });
   }
 
-  /* ---------- 값 편집기 (재귀) ---------- */
   function title(item, i) {
     if (item && typeof item === 'object') {
       var k = ['name', 'title', 'label', 'id', 'en', 'date', 'oc', 'role'].filter(function (x) { return item[x] && typeof item[x] === 'string'; })[0];
@@ -293,10 +277,6 @@
     return stringEd(val == null ? '' : String(val), set, key, pkey);
   }
 
-  /* ==========================================================
-     기능 추가 메뉴 : 지금은 없앤 기능(AU / 성장 버전, 타임라인, TRPG 로그 …)을
-     필요할 때 다시 꺼내 쓸 수 있게, "+ 추가" 에서 고르는 틀(템플릿) 모음이에요.
-     ========================================================== */
   function secBlock(title, en, extra) {
     var o = { title: title, en: en }; Object.keys(extra || {}).forEach(function (k) { o[k] = extra[k]; }); return o;
   }
@@ -314,7 +294,7 @@
   var T_LOG = { name: '로그', logs: [LOG_TPL] };
 
   function templatesFor(key) {
-    var area = st.tab;   /* oc / pair / owner */
+    var area = st.tab;
     if (key === 'standing') return [
       { name: '의상 / 표정 버전', desc: '이미지만 바꿔서 왼쪽 버튼으로 전환', value: { label: '의상', image: '', thumb: '' } },
       { name: 'AU 버전', desc: '다른 색 · 소개 · 탭까지 따로 적는 버전', value: {
@@ -438,7 +418,6 @@
     return box;
   }
 
-  /* 칸이 없는 항목을 나중에 다시 꺼내 쓰는 "+ 항목 추가" 목록 */
   var STAND_BADGE = { image: '', title: '', sub: '', size: 160 };
   var OPTIONAL = {
     standing: { tag: '', name: '', en: '', subtitle: '', desc: '', stats: [], badge: STAND_BADGE, tabs: [], color: '', theme: { background: '' }, standingSize: 920 },
@@ -467,7 +446,6 @@
     cast: '캐릭터 (GM / PL)', role: '역할 (GM / PL)', player: '플레이어', google: '구글 캘린더', apiKey: 'API 키',
     calendarIds: '캘린더 ID' });
 
-  /* 말하는 사람 : 이름(칸 이름)을 직접 고칠 수 있어야 해서 따로 */
   function speakersEd(obj) {
     var box = h('div');
     function draw() {
@@ -696,7 +674,6 @@
     return box;
   }
 
-  /* ---------- 화면 ---------- */
   function tabs() {
     var keys = Object.keys(st.draft).filter(function (k) { return !SKIP[k]; });
     keys.sort(function (a, b) {
@@ -745,7 +722,6 @@
     show();
   }
 
-  /* ---------- 방명록 관리 ---------- */
   function renderGuestbook(panel) {
     panel.appendChild(h('h2', { text: '방명록 관리' }));
     panel.appendChild(h('p', { class: 'oha-note', text: '비밀글을 포함해 모든 글이 보여요. 답글을 쓰고 저장하면 방문자 화면에 표시돼요. 비밀글의 답글은 같은 비밀번호로 잠겨요.' }));
@@ -804,7 +780,6 @@
     });
   }
 
-  /* ---------- 저장 / 되돌리기 ---------- */
   function save() {
     if (!isAdmin()) return toast('관리자만 저장할 수 있어요.', true);
     var btn = $('#oha-save'); btn.disabled = true; btn.textContent = '저장 중…';
@@ -831,18 +806,13 @@
       }).catch(function (e) { toast('되돌리지 못했어요: ' + (e.message || e), true); });
   }
 
-  /* ---------- data.js 내보내기 (정본 = GitHub) ---------- */
   function exportDataJs() {
     if (!isAdmin()) return toast('관리자만 내보낼 수 있어요.', true);
     var full = {};
     if (S.admin) full.admin = clone(S.admin);
     Object.keys(SKIP).forEach(function (k) { if (k !== 'admin' && (k in S)) full[k] = clone(S[k]); });
     Object.keys(st.draft).forEach(function (k) { if (!SKIP[k]) full[k] = clone(st.draft[k]); });
-    var header = '/* data.js — 사이트 내용\n' +
-      '   편집기의 "data.js 내보내기" 로 뽑은 파일이에요.\n' +
-      '   이 파일을 GitHub 저장소에 올리면(커밋) Vercel 이 자동 배포해 사이트에 반영돼요.\n' +
-      '   remote: false 로 두면 이 data.js 가 정본으로 쓰여요. */\n\n';
-    var text = header + 'window.SITE = ' + JSON.stringify(full, null, 2) + ';\n';
+    var text = 'window.SITE = ' + JSON.stringify(full, null, 2) + ';\n';
     try {
       var blob = new Blob([text], { type: 'text/javascript;charset=utf-8' });
       var url = URL.createObjectURL(blob);
@@ -855,7 +825,6 @@
     toast('data.js 를 내려받았어요. GitHub 에 올리면(커밋) 반영돼요.');
   }
 
-  /* ---------- 로그인 화면 / 전체 ---------- */
   function draw() {
     var root = st.root; root.innerHTML = '';
     var top = h('div', { class: 'oha-top' });

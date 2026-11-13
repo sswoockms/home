@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home</title>
 
-  <!-- 폰트 : Pretendard -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
   <link rel="stylesheet" href="style.css?v=20261015b">
 
-  <!-- 진단 : data.js 를 못 읽으면 화면 위에 이유를 알려 줘요 -->
   <script>
   (function () {
     var msgs = [];
@@ -39,17 +37,14 @@
   })();
   </script>
 
-  <!-- 내용 데이터 (수정은 data.js 에서) -->
   <script src="data.js?v=20261015b"></script>
 
-  <!-- 저장된 설정 불러오기 (Firestore site/config) : 관리자 편집기에서 저장한 내용이 data.js 위에 덮어써져요 -->
   <script>
   (function () {
     var S = window.SITE || {}, KEY = 'site-override-v1';
     var cfg = (S.firebase && S.firebase.config) || (S.guest && S.guest.firebase && S.guest.firebase.config) || null;
     window.SITE_FB = cfg;
     var SKIP = { firebase: 1, admin: 1, firebaseSdk: 1 };
-    /* 관리자 편집기의 미리보기(iframe) : 부모 편집기에서 편집 중인 값을 그대로 보여줘요 */
     if (window.parent !== window && /[?&]preview=1/.test(location.search)) {
       try {
         var pd = window.parent.OHAdmin && window.parent.OHAdmin._state.draft;
@@ -58,7 +53,7 @@
       } catch (e) {}
       return;
     }
-    if (S.remote === false) return;   /* data.js 정본 모드 : Firestore 덮어쓰기/캐시를 쓰지 않아요 */
+    if (S.remote === false) return;
     var cached = null;
     try { cached = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
     if (cached && cached.data) Object.keys(cached.data).forEach(function (k) { if (!SKIP[k]) S[k] = cached.data[k]; });
@@ -91,37 +86,28 @@
 <body>
 
   <div class="viewport">
-    <!-- 바탕 이미지 (data.js ③ bgImage) -->
     <div class="bg-image" id="bgImage"></div>
     <div class="bg-fade" id="bgFade"></div>
 
-    <!-- 1600 x 1000 고정 판 : 창 크기에 맞춰 통째로 확대/축소 -->
     <main class="stage" id="stage">
 
-      <!-- ==================== 메인홈 ==================== -->
       <section class="page page-home" data-page="home" id="pgHome">
-              <!-- 왼쪽 : 로고 -->
               <section class="col col-left">
                 <h1 class="logo" id="logo"></h1>
                 <div class="me" id="homeMe"></div>
               </section>
 
-              <!-- 가운데 : 메인 일러스트 -->
               <section class="col col-center">
                 <figure class="illust" id="illust"></figure>
               </section>
 
-              <!-- 오른쪽 : 메뉴 -->
               <nav class="col col-right">
                 <ul class="menu" id="menu"></ul>
               </nav>
 
-    
       </section>
 
-      <!-- ==================== Oc ==================== -->
       <section class="page" data-page="oc" hidden>
-              <!-- ===== 목록 화면 ===== -->
               <section class="oc-list" id="ocList">
                 <header class="oc-head">
                   <a class="oc-home" href="#">
@@ -133,15 +119,14 @@
                 <div class="oc-grid" id="ocGrid"></div>
               </section>
 
-              <!-- ===== 프로필 화면 ===== -->
               <section class="oc-profile" id="ocProfile" hidden>
                 <button class="pf-back" id="pfBack" title="목록으로">
                   <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
                 </button>
 
-                <div class="pf-bgstand" id="pfBgStand"></div>     <!-- 뒤에 옅게 깔리는 스탠딩 -->
-                <ul class="pf-variants" id="pfVariants"></ul>     <!-- 의상/버전 바꾸기 -->
-                <figure class="pf-stand" id="pfStand"></figure>   <!-- 스탠딩 -->
+                <div class="pf-bgstand" id="pfBgStand"></div>
+                <ul class="pf-variants" id="pfVariants"></ul>
+                <figure class="pf-stand" id="pfStand"></figure>
 
                 <div class="pf-panel" id="pfPanel">
                   <header class="pf-head">
@@ -152,7 +137,7 @@
                       <p class="pf-subtitle" id="pfSubtitle"></p>
                       <p class="pf-desc" id="pfDesc"></p>
                     </div>
-                    <div class="pf-badge" id="pfBadge"></div>      <!-- 진영 로고 / SD -->
+                    <div class="pf-badge" id="pfBadge"></div>
                   </header>
                   <div class="pf-stats" id="pfStats"></div>
                   <nav class="pf-tabs" id="pfTabs"></nav>
@@ -160,12 +145,9 @@
                 </div>
               </section>
 
-    
       </section>
 
-      <!-- ==================== Pair ==================== -->
       <section class="page" data-page="pair" hidden>
-              <!-- ===== 목록 화면 ===== -->
               <section class="oc-list" id="prList">
                 <header class="oc-head">
                   <a class="oc-home" href="#">
@@ -177,16 +159,13 @@
                 <div class="pr-grid" id="prGrid"></div>
               </section>
 
-              <!-- ===== 페어 화면 (아래 탭으로 내용 전환) ===== -->
               <section class="pr-profile" id="prProfile" hidden>
                 <button class="pf-back" id="prBack" title="목록으로">
                   <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
                 </button>
 
-                <!-- 1) 커버 -->
                 <div class="pr-cover">
                   <div class="pr-frame">
-                    <!-- 양쪽 클로즈업 (누르면 그 캐릭터 프로필로) / 최대 4인 -->
                     <div class="pr-side pr-side--l" id="prSideL"></div>
                     <div class="pr-side pr-side--r" id="prSideR"></div>
                     <p class="pr-script" id="prScript"></p>
@@ -202,7 +181,6 @@
                     <div class="pr-stamp" id="prStamp"></div>
                     <div class="pr-date" id="prDate"></div>
 
-                    <!-- 탭을 누르면 오른쪽에서 나오는 내용 칸 -->
                     <div class="pr-detail" id="prDetail">
                       <div class="pr-body" id="prBody"></div>
                     </div>
@@ -211,19 +189,15 @@
                     <span class="pr-dots pr-dots--r"></span>
                   </div>
 
-                  <!-- 아래쪽 탭 버튼 -->
                   <nav class="pr-nav" id="prNav"></nav>
                 </div>
               </section>
 
-    
       </section>
 
-      <!-- ==================== Owner ==================== -->
       <section class="page" data-page="owner" hidden>
               <section class="ow">
 
-                <!-- 왼쪽 : 제목 + 오너 프로필 카드 -->
                 <aside class="ow-left">
                   <a class="oc-home" href="#">
                     <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>HOME
@@ -236,14 +210,11 @@
                     <h2 class="ow-name" id="owName"></h2>
                     <p class="ow-en" id="owEn"></p>
                     <p class="ow-intro" id="owIntro"></p>
-                    <!-- 배너 (내 배너 + 링크 배너) -->
                     <div class="ow-banners" id="owBanners"></div>
                   </div>
                 </aside>
 
-                <!-- 오른쪽 : 탭 + 내용 -->
                 <div class="ow-right">
-                  <!-- 탭 버튼 + 트위터/포스타입 링크 -->
                   <div class="ow-top">
                     <nav class="ow-nav" id="owNav"></nav>
                     <div class="ow-links" id="owLinks"></div>
@@ -273,11 +244,9 @@
     
       </section>
 
-      <!-- ==================== Guest ==================== -->
       <section class="page" data-page="guest" hidden>
               <section class="ow">
 
-                <!-- 왼쪽 : 제목 + 안내 + 링크 -->
                 <aside class="ow-left">
                   <a class="oc-home" href="#">
                     <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>HOME
@@ -291,7 +260,6 @@
                   </div>
                 </aside>
 
-                <!-- 오른쪽 : 방명록 -->
                 <div class="ow-right">
                   <div class="ow-panel gs-panel" id="gPanel"></div>
                 </div>
@@ -300,7 +268,6 @@
     
       </section>
 
-      <!-- ==================== Works (만든 것들) ==================== -->
       <section class="page" data-page="works" hidden>
               <section class="ow">
                 <aside class="ow-left">
@@ -359,13 +326,11 @@
               </section>
       </section>
 
-      <!-- ==================== 관리자 (#admin / 화면은 admin.js 가 그려요) ==================== -->
       <section class="page" data-page="admin" hidden></section>
 
     </main>
   </div>
 
-  <!-- 갤러리 크게 보기 -->
   <div class="lb" id="lb" hidden>
     <button class="lb-close" id="lbClose" title="닫기 (ESC)">
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -383,18 +348,12 @@
     <span class="lb-count" id="lbCount"></span>
   </div>
 
-  <!-- 알림 -->
   <div class="ow-toast" id="gToast"></div>
 
-  <!-- ======================================================
-       공통 : 페이지 목록, 주소 변환, 갤러리 크게 보기
-       ====================================================== -->
   <script>
-  window.PAGES = {};                 /* 각 화면이 "보여질 때" 할 일 */
-  window.APP = { page: null };       /* 지금 보고 있는 화면 이름 */
+  window.PAGES = {};
+  window.APP = { page: null };
 
-  /* data.js 에 예전 방식(oc.html 등)으로 적어도 알아서 바꿔 줘요
-     "oc.html" → "#oc",  "pair.html#pair1" → "#pair/pair1",  "index.html" → "#" */
   function toRoute(link) {
     if (!link) return '#';
     var m = String(link).match(/^(?:\.\/)?(index|oc|pair|owner|guest)\.html(?:#(.*))?$/);
@@ -403,8 +362,6 @@
     return '#' + m[1] + (m[2] ? '/' + m[2] : '');
   }
 
-  /* 화면 색 (data.js ② colors.pages + 캐릭터/페어 대표색)
-     THEME.apply(화면, 색 묶음1, 색 묶음2 …) → 뒤에 적은 것이 우선 */
   window.THEME = (function () {
     var KEYS = {
       point: '--point', title: '--t-title', text: '--t-text', sub: '--t-sub',
@@ -426,7 +383,6 @@
         else el.style.removeProperty(KEYS[key]);
       }
     }
-    /* 캐릭터 / 페어 데이터에서 색 묶음 꺼내기 : color(대표색) + theme(세부) */
     function of(d) {
       if (!d) return null;
       var t = {}, k;
@@ -437,7 +393,6 @@
     return { apply: apply, base: base, of: of };
   })();
 
-  /* 갤러리 크게 보기 (모든 화면 공용) */
   window.LB = (function () {
     function $(id) { return document.getElementById(id); }
     var items = [], idx = 0;
@@ -459,7 +414,7 @@
     $('lb').addEventListener('click', function (e) { if (e.target === this) close(); });
     document.addEventListener('keydown', function (e) {
       if ($('lb').hidden) return;
-      if (e.key === 'Escape') { close(); e.stopImmediatePropagation(); }   /* 다른 화면의 ESC 동작은 막기 */
+      if (e.key === 'Escape') { close(); e.stopImmediatePropagation(); }
       if (e.key === 'ArrowLeft') show(idx - 1);
       if (e.key === 'ArrowRight') show(idx + 1);
     });
@@ -574,15 +529,12 @@
   };
   </script>
 
-  <!-- ==================== 메인홈 ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
 
-    /* 메인홈 제목 (공통 라우터가 불러요) */
     PAGES.home = function () { document.title = D.title || 'Home'; };
 
-    /* 색상 : data.js 의 colors → CSS 변수 */
     var C = D.colors || {}, P = C.player || {};
     var colorMap = {
       '--point': C.point || D.color,
@@ -599,13 +551,12 @@
     };
     var colorVars = {};
     for (var k in colorMap) {
-      if (colorMap[k]) {                                   /* 비워 둔 항목은 기본 색 유지 */
+      if (colorMap[k]) {
         colorVars[k] = colorMap[k];
         document.documentElement.style.setProperty(k, colorMap[k]);
       }
     }
 
-    /* 바탕 이미지 */
     var B = D.bgImage || {};
     var bgEl = document.getElementById('bgImage');
     if (B.image) {
@@ -629,7 +580,6 @@
       if (B.fadeBottom !== false) document.getElementById('bgFade').classList.add('is-on');
     }
 
-    /* 로고 */
     var logoBox = document.getElementById('logo');
     var logo = D.logo || {};
     if (logo.image) {
@@ -645,7 +595,6 @@
       logoBox.appendChild(lTxt);
     }
 
-    /* 자기소개 (data.js ④-2 home) */
     (function () {
       var H = D.home || {}, box = document.getElementById('homeMe');
       function mk(tag, cls, txt) { var e = document.createElement(tag); e.className = cls; if (txt != null) e.textContent = txt; return e; }
@@ -677,17 +626,15 @@
         });
         box.appendChild(lk);
       }
-      /* hello 는 로고 위에 오도록 */
       var hello = box.querySelector('.me-hello');
       if (hello) { hello.className = 'me-hello'; document.getElementById('logo').parentNode.insertBefore(hello, document.getElementById('logo')); }
     })();
 
-    /* 메인 일러스트 */
     var illBox = document.getElementById('illust');
     var ill = D.illust || {};
-    if (ill.size) illBox.style.setProperty('--illu-size', ill.size + 'px');   /* 크기 */
+    if (ill.size) illBox.style.setProperty('--illu-size', ill.size + 'px');
     if (ill.frame === false) {
-      illBox.classList.add('illust--object');           /* 투명 오브젝트 모드 */
+      illBox.classList.add('illust--object');
       if (ill.shadow !== false) illBox.classList.add('illust--shadow');
     }
     if (ill.image) {
@@ -702,7 +649,6 @@
       illBox.appendChild(ph);
     }
 
-    /* 메뉴 */
     var menuBox = document.getElementById('menu');
     (D.menu || []).forEach(function (m, i) {
       var li = document.createElement('li');
@@ -729,11 +675,8 @@
       menuBox.appendChild(li);
     });
 
-    /* 화면 맞춤 (1600 x 1000 판을 창 크기에 맞게 확대/축소) */
     var stage = document.getElementById('stage');
     var W = 1600, H = 1000;
-    /* 화면 맞춤 : 넓은 화면은 판을 통째로 확대/축소,
-       좁은 화면(휴대폰, 세로 태블릿)은 모바일 배치(세로로 쌓기)로 바꿔요 */
     var MOBILE_MAX = (D.mobileWidth || 820);
     function fit() {
       var mobile = window.innerWidth <= MOBILE_MAX;
@@ -745,18 +688,14 @@
     window.addEventListener('resize', fit);
     fit();
 
-    /* ======================================================
-       캘린더 (기념일 표시, 드래그 이동 / 접기)
-       ====================================================== */
     if ((D.calendar || {}).enable !== false) {
       var calBox = document.createElement('div');
-      document.getElementById('pgHome').appendChild(calBox);             /* 판 안에 넣어서 화면 크기에 맞춰 같이 커지고 작아짐 → 메뉴와 겹치지 않음 */
+      document.getElementById('pgHome').appendChild(calBox);
       Calendar(calBox, D.calendar || {});
     }
 
   })();
 
-  /* ---------- 캘린더 본체 ---------- */
   function Calendar(root, cfg) {
     var WEEK = cfg.weekStart === 1 ? ['월','화','수','목','금','토','일'] : ['일','월','화','수','목','금','토'];
     var start = cfg.weekStart === 1 ? 1 : 0;
@@ -772,7 +711,6 @@
       return e;
     }
 
-    /* 기념일 정리 : "MM-DD" 는 매년, "YYYY-MM-DD" 는 그날만 (yearly: true 면 매년 + n주년) */
     var EVENTS = (cfg.events || []).map(function (e) {
       var p = String(e.date || '').split('-').map(Number), o = { title: e.title || '', raw: e };
       if (p.length === 2) { o.m = p[0]; o.d = p[1]; o.yearly = true; }
@@ -792,7 +730,6 @@
       });
     }
 
-    /* 다가오는 기념일 (오늘부터 1년 안) */
     function upcoming(limit) {
       var list = [];
       for (var i = 0; i <= 366 && list.length < limit; i++) {
@@ -865,12 +802,10 @@
     }
     var asked = {};
 
-    /* 아래쪽 : 다가오는 기념일 D-day + 함께한 날 D+ */
     function foot() {
       var box = q('.cal-foot'); box.innerHTML = '';
       box.classList.remove('is-swap'); void box.offsetWidth; box.classList.add('is-swap');
 
-      /* 날짜를 눌렀을 때 : 그날의 기념일만 표시 (한 번 더 누르면 원래대로) */
       if (selected) {
         var ev = eventsOn(selected.getFullYear(), selected.getMonth() + 1, selected.getDate());
         var r0 = el('div', 'cal-row');
@@ -910,12 +845,11 @@
       if (act === 'fold') root.classList.toggle('is-folded');
     });
 
-    /* 드래그로 위치 이동 (판 크기 비율에 맞춰 계산) */
     var head = q('.mp-head'), sx = 0, sy = 0, px = 0, py = 0, sc = 1, drag = false;
     var box = root.parentNode;
     head.addEventListener('pointerdown', function (e) {
       if (e.target.closest('button,a')) return;
-      if (document.documentElement.classList.contains('is-mobile')) return;   /* 모바일은 고정 */
+      if (document.documentElement.classList.contains('is-mobile')) return;
       var r = root.getBoundingClientRect(), br = box.getBoundingClientRect();
       sc = br.width / box.offsetWidth || 1;
       sx = (r.left - br.left) / sc; sy = (r.top - br.top) / sc;
@@ -939,7 +873,6 @@
 
   </script>
 
-  <!-- ==================== Oc ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
@@ -955,15 +888,10 @@
     }
     function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-
-    /* ---------- 공통 설정 ---------- */
     var root = document.documentElement;
     root.style.setProperty('--oc-fade', (O.fadeTime || 1.2) + 's');
     root.style.setProperty('--bgstand-op', (O.bgStandingOpacity == null ? 0.12 : O.bgStandingOpacity));
 
-    /* ======================================================
-       목록 화면
-       ====================================================== */
     $('ocTitle').textContent = O.title || 'Oc';
     $('ocSub').textContent = O.subtitle || '';
     var grid = $('ocGrid');
@@ -994,9 +922,6 @@
     });
     TAGFILTER($('ocList').querySelector('.oc-head'), grid, LIST.map(function (c) { return c.tags; }));
 
-    /* ======================================================
-       프로필 화면
-       ====================================================== */
     var cur = null;
 
     function showStanding(c, vi) {
@@ -1024,7 +949,6 @@
         stand.appendChild(el('div', 'pf-stand-ph is-in', 'STANDING IMAGE'));
       }
 
-      /* 버전 버튼 표시 */
       var items = $('pfVariants').children;
       for (var i = 0; i < items.length; i++) items[i].classList.toggle('is-active', i === vi);
     }
@@ -1047,7 +971,6 @@
       });
     }
 
-    /* 오른쪽 위 이미지 (진영 로고, SD 등) */
     function buildBadge(c) {
       var box = $('pfBadge'); box.innerHTML = '';
       var bd = c.badge || {};
@@ -1081,7 +1004,6 @@
       });
     }
 
-    /* ---------- 관계 자동 목록 ---------- */
     var PAIRS = ((D.pair || {}).list) || [];
 
     function charId(c, i) { return c.id || ('oc' + i); }
@@ -1091,8 +1013,6 @@
     }
     function thumbOf(c) { return c.thumb || ((c.standing || [])[0] || {}).image || ''; }
 
-    /* 관계 카드 하나 */
-    /* 관계 카드 하나 : 세로로 긴 이미지 + 아래쪽 이름 */
     function relCard(info) {
       var a = el(info.href ? 'a' : 'div', 'rel-card');
       if (info.href) a.href = info.href;
@@ -1116,9 +1036,8 @@
       t.appendChild(el('span', 'rel-group-name', title));
       t.appendChild(el('span', 'rel-group-count', String(cards.length)));
       g.appendChild(t);
-      var row = el('div', 'rel-row');              /* 많으면 오른쪽으로 스크롤 */
+      var row = el('div', 'rel-row');
       cards.forEach(function (cd, i) { cd.style.animationDelay = (i * 0.05) + 's'; row.appendChild(cd); });
-      /* 마우스 휠을 굴리면 가로로 넘어가게 (끝에 닿으면 원래대로 세로 스크롤) */
       row.addEventListener('wheel', function (e) {
         if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
         var max = row.scrollWidth - row.clientWidth;
@@ -1136,24 +1055,21 @@
       var myId = c.id, wrap = el('div', 'rel');
       var hasAny = false;
 
-      /* 1) 페어 : data.js ⑨ pair 에서 이 캐릭터가 들어간 페어를 자동으로 찾기 */
       var pairCards = [];
       PAIRS.forEach(function (p, pi) {
-        var mem = (p.members || []).slice(0, 4);   /* 최대 4인 */
+        var mem = (p.members || []).slice(0, 4);
         if (mem.indexOf(myId) < 0) return;
-        /* 나를 뺀 나머지 멤버 */
         var others = [];
         mem.forEach(function (m) {
           if (m === myId) return;
-          if (typeof m === 'string') {            /* 내 Oc 목록에 있는 캐릭터 */
+          if (typeof m === 'string') {
             var oc = findChar(m);
             if (oc) others.push({ name: oc.name, thumb: thumbOf(oc) });
-          } else if (m) {                         /* 다른 오너 캐릭터 등 { name, thumb } */
+          } else if (m) {
             others.push({ name: m.name, thumb: m.thumb || '' });
           }
         });
         if (!others.length) return;
-        /* 페어 하나당 카드 하나 */
         pairCards.push(relCard({
           name: p.name || others.map(function (o) { return o.name; }).join(' · '),
           sub: p.en || ('with ' + others.map(function (o) { return o.name; }).join(', ')),
@@ -1165,7 +1081,6 @@
       });
       if (pairCards.length) { wrap.appendChild(relGroup('Pair', pairCards)); hasAny = true; }
 
-      /* 2) 같은 진영 : faction 이 같은 캐릭터 자동으로 모으기 */
       if (c.faction) {
         var facCards = [];
         LIST.forEach(function (o, i) {
@@ -1183,7 +1098,6 @@
     }
 
     var curTab = 0, curVar = 0;
-    /* ---------- 갤러리 ---------- */
     function buildGallery(sec) {
       var g = el('div', 'pf-gallery');
       g.style.setProperty('--cols', sec.columns || 3);
@@ -1203,7 +1117,7 @@
       return g;
     }
 
-    var openLightbox = LB.open, closeLightbox = LB.close;   /* 갤러리 크게 보기 (공통) */
+    var openLightbox = LB.open, closeLightbox = LB.close;
 
     function showTab(c, ti) {
       curTab = ti;
@@ -1211,14 +1125,14 @@
       for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('is-active', i === ti);
       var body = $('pfBody'); body.innerHTML = ''; body.scrollTop = 0;
       var tab = (c.tabs || [])[ti] || {};
-      if (tab.auto) {                              /* 관계 자동 목록 (페어 + 같은 진영) */
+      if (tab.auto) {
         var rel = buildRelations(c);
         if (rel) body.appendChild(rel);
       }
       (tab.sections || []).forEach(function (sec, i) {
         var s = el('section', 'pf-sec');
         s.style.animationDelay = (i * 0.06) + 's';
-        if (sec.title || sec.en) {                 /* 제목을 비우면 검은 제목 바 없이 내용만 */
+        if (sec.title || sec.en) {
           var h = el('div', 'pf-sec-head');
           h.appendChild(el('h3', 'pf-sec-title', sec.title || ''));
           if (sec.en) h.appendChild(el('span', 'pf-sec-en', sec.en));
@@ -1252,7 +1166,6 @@
       showTab(c, tabs[curTab] ? curTab : 0);
     }
 
-    /* 버전(AU, 성장 등)에 적힌 항목이 있으면 그걸로 덮어쓰기 */
     var OVERRIDE = ['tag', 'name', 'en', 'subtitle', 'desc', 'stats', 'badge', 'tabs', 'faction', 'color', 'theme'];
     var SEC = document.querySelector('.page[data-page="oc"]');
     THEME.apply(SEC, THEME.base('oc'));
@@ -1263,9 +1176,7 @@
       return m;
     }
 
-    /* 오른쪽 본문 채우기 */
     function fillPanel(m) {
-      /* 캐릭터 대표색 (버전마다 다르게도 가능) */
       THEME.apply(SEC, THEME.base('oc'), THEME.of(m));
       $('pfTag').textContent = m.tag || '';
       $('pfName').textContent = m.name || '';
@@ -1278,7 +1189,6 @@
       document.title = (m.name || 'Oc') + ' | ' + (D.title || '');
     }
 
-    /* 왼쪽 버전 버튼을 눌렀을 때 : 스탠딩 + 본문 같이 교체 */
     function showVariant(c, vi) {
       curVar = vi;
       fillPanel(merged(c, vi));
@@ -1294,7 +1204,6 @@
       fillPanel(merged(c, 0));
       showStanding(c, 0);
 
-      /* 화면 전환 + 등장 효과 재시작 */
       var pf = $('ocProfile');
       $('ocList').hidden = true;
       pf.hidden = false;
@@ -1311,7 +1220,6 @@
       THEME.apply(SEC, THEME.base('oc'));
     }
 
-    /* 주소 #oc → 목록, #oc/아이디 → 프로필 (공통 라우터가 불러요) */
     PAGES.oc = function (id) {
       var found = null;
       LIST.forEach(function (c, i) { if ((c.id || ('oc' + i)) === id) found = c; });
@@ -1324,11 +1232,9 @@
       if (e.key === 'Escape' && cur) location.hash = '#oc';
     });
 
-
   })();
   </script>
 
-  <!-- ==================== Pair ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
@@ -1345,12 +1251,10 @@
     }
     function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-
     var root = document.documentElement;
     root.style.setProperty('--pr-fade', (PR.fadeTime || 1.2) + 's');
     if (PR.scriptFont === '') root.classList.add('no-script-font');
 
-    /* ---------- 멤버 정보 찾기 ---------- */
     function ocId(c, i) { return c.id || ('oc' + i); }
     function findOc(id) {
       for (var i = 0; i < OCS.length; i++) if (ocId(OCS[i], i) === id) return OCS[i];
@@ -1369,9 +1273,6 @@
       return { name: m.name || '', en: m.en || '', thumb: m.thumb || '', href: m.link || '' };
     }
 
-    /* ======================================================
-       목록 화면
-       ====================================================== */
     $('prTitle').textContent = PR.title || 'Pair';
     $('prSub').textContent = PR.subtitle || '';
     var grid = $('prGrid');
@@ -1395,12 +1296,8 @@
     });
     TAGFILTER($('prList').querySelector('.oc-head'), grid, LIST.map(function (p) { return p.tags; }));
 
-    /* ======================================================
-       페어 화면
-       ====================================================== */
     var cur = null, curTab = 0;
 
-    /* 클로즈업 하나 */
     function portrait(img, m, i) {
       var box = el(m.href ? 'a' : 'div', 'pr-portrait');
       if (m.href) { box.href = m.href; box.title = (m.name || '') + ' 프로필 보기'; }
@@ -1418,9 +1315,8 @@
       return box;
     }
 
-    /* 양쪽 클로즈업 그리기 (버전마다 바꿀 수 있어서 따로) */
     function renderSides(mems, por, animate) {
-      var half = Math.ceil(mems.length / 2);   /* 3인이면 2 + 1, 4인이면 2 + 2 */
+      var half = Math.ceil(mems.length / 2);
       var L = $('prSideL'), R = $('prSideR');
       L.innerHTML = ''; R.innerHTML = '';
       mems.forEach(function (m, i) {
@@ -1432,20 +1328,17 @@
       R.hidden = mems.length < 2;
     }
 
-    /* 스탠딩 목록 : standings 가 있으면 그걸, 없으면 standing 하나 */
     var standList = [], standIdx = 0, coverMems = [], coverPair = null;
     function getStandList(p) {
       if (p.standings && p.standings.length) return p.standings;
       return [{ image: p.standing || '', size: p.standingSize }];
     }
 
-    /* 스탠딩 버전 보여주기 (도장을 누를 때마다 다음 버전) */
     var PSEC = document.querySelector('.page[data-page="pair"]');
     THEME.apply(PSEC, THEME.base('pair'));
 
     function showStand(i, animate) {
       var p = coverPair, v = standList[i] || {};
-      /* 페어 대표색 → 스탠딩 버전에 색이 있으면 그 색 */
       THEME.apply(PSEC, THEME.base('pair'), THEME.of(p), THEME.of(v));
       standIdx = i;
       var st = $('prStand');
@@ -1467,7 +1360,6 @@
       if (animate && st.firstChild) { st.classList.add('is-leaving'); setTimeout(put, 280); }
       else put();
 
-      /* 버전마다 클로즈업 / 뒤 글자도 바꿀 수 있어요 (적지 않으면 기본) */
       var por = v.portraits || p.portraits || [];
       if (animate) {
         if (v.portraits || (standList[prevIdx] || {}).portraits) renderSides(coverMems, por, true);
@@ -1482,7 +1374,6 @@
       }
       prevIdx = i;
 
-      /* 도장 안의 버전 표시 */
       var ver = $('prStamp').querySelector('.pr-stamp-ver');
       if (ver) ver.textContent = (v.label ? v.label + '  ' : '') + (i + 1) + ' / ' + standList.length;
     }
@@ -1490,7 +1381,7 @@
 
     function fillCover(p) {
       coverPair = p;
-      coverMems = (p.members || []).slice(0, 4).map(member);   /* 최대 4인 */
+      coverMems = (p.members || []).slice(0, 4).map(member);
       standList = getStandList(p);
 
       $('prRel').textContent = p.relation || '';
@@ -1499,7 +1390,6 @@
       $('prEn').textContent = coverMems.map(function (m) { return m.name; }).join('  ×  ');
       $('prDesc').textContent = p.desc || '';
 
-      /* 동그란 도장 : 스탠딩이 2개 이상이면 누를 때마다 다음 버전으로 */
       var sp = p.stamp || {}, stamp = $('prStamp'); stamp.innerHTML = '';
       var multi = standList.length > 1;
       stamp.hidden = !(sp.title || sp.text || multi);
@@ -1516,7 +1406,6 @@
       prevIdx = 0;
       showStand(0, false);
 
-      /* 날짜 / 숫자 */
       var dt = p.date || {}, date = $('prDate'); date.innerHTML = '';
       date.hidden = !(dt.big || dt.sub || dt.small);
       if (dt.big) date.appendChild(el('strong', 'pr-date-big', dt.big));
@@ -1524,7 +1413,6 @@
       if (dt.small) date.appendChild(el('span', 'pr-date-small', dt.small));
     }
 
-    /* ---------- 탭 / 섹션 (Oc 페이지와 같은 형식) ---------- */
     function buildGallery(sec) {
       var g = el('div', 'pf-gallery');
       g.style.setProperty('--cols', sec.columns || 3);
@@ -1544,9 +1432,8 @@
       return g;
     }
 
-    var openLightbox = LB.open, closeLightbox = LB.close;   /* 갤러리 크게 보기 (공통) */
+    var openLightbox = LB.open, closeLightbox = LB.close;
 
-    /* 탭 내용 그리기 */
     function renderSections(sections, body) {
       (sections || []).forEach(function (sec, i) {
         var s = el('section', 'pf-sec');
@@ -1573,13 +1460,11 @@
       });
     }
 
-    /* ---------- 타임라인 ---------- */
     function buildTimeline(tab) {
       var wrap = el('div', 'tl');
       var lines = (tab.timelines || []).filter(function (t) { return t; });
       if (!lines.length) { wrap.appendChild(el('p', 'pf-gal-empty', '타임라인을 넣어 주세요')); return wrap; }
 
-      /* 타임라인이 2개 이상이면 위쪽에 전환 버튼 (본편 / AU …) */
       var sw = el('div', 'tl-switch');
       var stage = el('div', 'tl-stage');
       var btns = [];
@@ -1612,7 +1497,6 @@
 
       var scroll = el('div', 'tl-scroll');
       var track = el('div', 'tl-track');
-      /* 사건이 적으면 칸 너비에 맞춰 펼치고, 많으면 오른쪽으로 스크롤 */
       var GAP = 170, PADL = 60, PADR = 170;
       track.style.width = (PADL + PADR + Math.max(evs.length - 1, 1) * GAP) + 'px';
       track.appendChild(el('span', 'tl-axis'));
@@ -1640,7 +1524,7 @@
         item.style.setProperty('--d', (0.35 + i * 0.07) + 's');
         var sz = { 1: 12, 2: 20, 3: 30 }[ev.size] || 16;
         item.style.setProperty('--dot', sz + 'px');
-        item.style.setProperty('--stick', (34 + (i * 37) % 46) + 'px');   /* 막대 길이를 조금씩 다르게 */
+        item.style.setProperty('--stick', (34 + (i * 37) % 46) + 'px');
         item.appendChild(el('span', 'tl-dot'));
         item.appendChild(el('span', 'tl-stick'));
         var lab = el('span', 'tl-label');
@@ -1659,14 +1543,8 @@
       return box;
     }
 
-    /* ---------- TRPG 로그 백업 ---------- */
     var GM_NAMES = ['GM', 'KP', 'DM', 'ST', 'GL'];
 
-    /* 붙여넣은 로그 글을 한 줄씩 나누기
-       "이름: 대사"  → 대사 말풍선
-       "# 제목"      → 장면 구분선
-       "> 내용"      → 시스템 (주사위, 판정 등)
-       그 외         → 지문 (서술)                       */
     function parseRaw(raw) {
       var out = [];
       String(raw || '').split(/\r?\n/).forEach(function (line) {
@@ -1720,7 +1598,6 @@
     function renderLog(lg, bare) {
       var box = el('div', 'lg-doc');
 
-      /* 위쪽 정보 */
       var head = el('div', 'lg-head');
       var top = el('div', 'lg-head-top');
       if (lg.system) top.appendChild(el('span', 'lg-tag', lg.system));
@@ -1739,7 +1616,6 @@
       }
       if (!bare) box.appendChild(head);
 
-      /* 로그 파일(html)을 통째로 넣는 경우 */
       if (lg.embed) {
         var fr = el('iframe', 'lg-embed');
         fr.src = lg.embed; fr.loading = 'lazy'; fr.title = lg.title || 'log';
@@ -1747,7 +1623,6 @@
         return box;
       }
 
-      /* 대사 / 지문 */
       var lines = (lg.lines && lg.lines.length) ? lg.lines : parseRaw(lg.raw);
       var SP = lg.speakers || {};
       var gmName = lg.gm || '';
@@ -1789,7 +1664,6 @@
       return box;
     }
 
-    /* 탭 목록 : [커버] + data.js 의 tabs */
     var navItems = [];
     function buildNav(p) {
       navItems = [{ name: PR.coverTab || 'Cover', cover: true }];
@@ -1805,8 +1679,6 @@
       showTab(p, 0);
     }
 
-    /* 탭 전환 : 커버면 원래 화면, 나머지는 내용 칸이 열림
-       (내용 칸이 이미 열려 있으면 이전 내용이 흐려지며 사라진 뒤 새 내용이 떠오름) */
     var swapTimer = null;
     function showTab(p, ti) {
       var wasOpen = curTab > 0;
@@ -1835,15 +1707,14 @@
       }
 
       frame.classList.add('is-detail');
-      if (document.documentElement.classList.contains('is-mobile')) {   /* 모바일 : 내용 칸으로 내려가기 */
+      if (document.documentElement.classList.contains('is-mobile')) {
         setTimeout(function () { detail.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
       }
-      frame.classList.toggle('is-wide', !!(t.timelines || t.logs));   /* 타임라인, 로그는 넓게 */
+      frame.classList.toggle('is-wide', !!(t.timelines || t.logs));
       if (wasOpen) { body.classList.add('is-leaving'); swapTimer = setTimeout(fill, 220); }
       else fill();
     }
 
-    /* 뒤 필기체 글자는 클로즈업 / 스탠딩 뒤로 (style.css 가 캐시돼 있어도 적용되도록 직접 지정) */
     function layerFix() {
       var s = $('prScript'); if (s) s.style.zIndex = '0';
       ['prSideL', 'prSideR'].forEach(function (id) { var e = $(id); if (e) e.style.zIndex = '1'; });
@@ -1872,7 +1743,6 @@
       THEME.apply(PSEC, THEME.base('pair'));
     }
 
-    /* 주소 #pair → 목록, #pair/아이디 → 페어 화면 (공통 라우터가 불러요) */
     PAGES.pair = function (id) {
       var found = null;
       LIST.forEach(function (p, i) { if ((p.id || ('pair' + i)) === id) found = p; });
@@ -1883,16 +1753,14 @@
     document.addEventListener('keydown', function (e) {
       if (APP.page !== 'pair' || LB.isOpen()) return;
       if (e.key === 'Escape' && cur) {
-        if (curTab !== 0) showTab(cur, 0);       /* 내용 칸이 열려 있으면 커버로 */
+        if (curTab !== 0) showTab(cur, 0);
         else location.hash = '#pair';
       }
     });
 
-
   })();
   </script>
 
-  <!-- ==================== Owner ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
@@ -1906,10 +1774,6 @@
       return e;
     }
 
-
-    /* ======================================================
-       왼쪽 : 오너 프로필 카드
-       ====================================================== */
     var P = OW.profile || {};
     THEME.apply(document.querySelector('.page[data-page="owner"]'), THEME.base('owner'));
     window.addEventListener('resize', function () { if (APP.page === 'owner') fitBanners(); });
@@ -1919,7 +1783,7 @@
       document.querySelector('.page[data-page="owner"]').classList.toggle('is-pl', on);
       if (on && !plReady) { plReady = true; buildPlaylist(); }
       document.title = (on ? (PL.title || 'Playlist') : (OW.title || 'Owner')) + ' | ' + (D.title || '');
-      setTimeout(fitBanners, 30);              /* 화면에 나타난 뒤 배너 크기 다시 맞추기 */
+      setTimeout(fitBanners, 30);
     };
 
     function buildPlaylist() {
@@ -2038,9 +1902,6 @@
       links.appendChild(a);
     });
 
-    /* ======================================================
-       오른쪽 : 탭 내용
-       ====================================================== */
     function buildGallery(sec) {
       var g = el('div', 'pf-gallery');
       g.style.setProperty('--cols', sec.columns || 3);
@@ -2060,7 +1921,7 @@
       return g;
     }
 
-    var openLightbox = LB.open, closeLightbox = LB.close;   /* 갤러리 크게 보기 (공통) */
+    var openLightbox = LB.open, closeLightbox = LB.close;
 
     function renderSections(sections, body) {
       (sections || []).forEach(function (sec, i) {
@@ -2088,7 +1949,6 @@
       });
     }
 
-    /* 왼쪽 카드 안 배너 (카드 높이에 맞춰 자동으로 칸 수 조절 → 스크롤 없음) */
     function buildBanners() {
       var wrap = $('owBanners');
       var BN = OW.banner || {};
@@ -2124,14 +1984,12 @@
       fitBanners();
     }
 
-    /* 배너가 카드 밖으로 넘치면 한 줄에 들어가는 개수를 늘려서 작게 */
     function fitBanners() {
       var wrap = $('owBanners');
       if (wrap.hidden) return;
       var cols = (OW.banner || {}).columns || 2;
       wrap.style.setProperty('--bn-cols', cols);
-      if (document.documentElement.classList.contains('is-mobile')) return;   /* 모바일은 카드가 길어져서 그대로 */
-      /* 마지막 배너 묶음의 아래 끝이 칸 높이를 넘는지 (움직이는 효과는 빼고 계산) */
+      if (document.documentElement.classList.contains('is-mobile')) return;
       function over() {
         var last = wrap.lastElementChild;
         return last && (last.offsetTop + last.offsetHeight - wrap.offsetTop) > wrap.clientHeight + 1;
@@ -2143,7 +2001,6 @@
     }
     buildBanners();
 
-    /* ---------- 탭 ---------- */
     var tabs = (OW.tabs || []).slice();
     var cur = -1, swapTimer = null;
 
@@ -2182,11 +2039,9 @@
 
     if (tabs.length) showTab(0);
 
-
   })();
   </script>
 
-  <!-- ==================== Guest ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
@@ -2200,8 +2055,6 @@
       return e;
     }
 
-
-    /* ---------- 알림 ---------- */
     var toastTimer = null;
     function toast(msg) {
       var t = $('gToast');
@@ -2211,9 +2064,6 @@
       toastTimer = setTimeout(function () { t.classList.remove('is-on'); }, 2600);
     }
 
-    /* ======================================================
-       왼쪽 : 안내 + 링크 (에스크, 핑크 등)
-       ====================================================== */
     THEME.apply(document.querySelector('.page[data-page="guest"]'), THEME.base('guest'));
     PAGES.guest = function () { document.title = (G.title || 'Guest') + ' | ' + (D.title || ''); };
     $('gTitle').textContent = G.title || 'Guest';
@@ -2238,9 +2088,6 @@
     });
     links.hidden = !links.children.length;
 
-    /* ======================================================
-       오른쪽 : 방명록
-       ====================================================== */
     var panel = $('gPanel');
     var mode = G.mode || 'google';
     panel.appendChild(el('p', 'pr-detail-title', G.boardTitle || 'Guestbook'));
@@ -2250,7 +2097,6 @@
     else if (mode === 'firebase') buildFirebase();
     else panel.appendChild(el('p', 'gs-empty', G.emptyText || '방명록은 왼쪽 링크를 이용해 주세요.'));
 
-    /* ---------- 외부 위젯 넣기 ---------- */
     function buildWidget() {
       var W = G.widget || {};
       var box = el('div', 'gs-widget');
@@ -2262,7 +2108,6 @@
         box.appendChild(fr);
       } else if (W.code) {
         box.innerHTML = W.code;
-        /* 붙여 넣은 코드 안의 script 도 실행되게 */
         box.querySelectorAll('script').forEach(function (old) {
           var s = document.createElement('script');
           for (var i = 0; i < old.attributes.length; i++) s.setAttribute(old.attributes[i].name, old.attributes[i].value);
@@ -2275,12 +2120,10 @@
       panel.appendChild(box);
     }
 
-    /* ---------- 구글 폼 + 시트 방명록 ---------- */
     function buildGoogle() {
       var GG = G.google || {};
       var ready = GG.formAction && GG.messageEntry;
 
-      /* 1) 글쓰기 칸 */
       var form = el('form', 'gs-form');
       form.innerHTML =
         '<div class="gs-form-row">' +
@@ -2300,7 +2143,6 @@
       });
       panel.appendChild(form);
 
-      /* 2) 글 목록 */
       var listBox = el('div', 'gs-list');
       var more = el('button', 'pr-nav-btn gs-more', '더 보기');
       more.hidden = true;
@@ -2343,7 +2185,6 @@
       }
       more.onclick = showMore;
 
-      /* 시트(CSV) 불러오기 */
       function load() {
         if (!GG.sheetCsv) return;
         listBox.innerHTML = '';
@@ -2355,7 +2196,7 @@
         }).then(function (text) {
           var col = GG.columns || {};
           var ci = function (key, def) { return col[key] == null ? def : col[key]; };
-          var rows = parseCSV(text).slice(1);                   /* 첫 줄은 제목 줄 */
+          var rows = parseCSV(text).slice(1);
           entries = rows.map(function (r) {
             return {
               time: shortTime(r[ci('time', 0)]),
@@ -2379,7 +2220,6 @@
       }
       if (ready) load();
 
-      /* 글 보내기 (구글 폼으로 전송) */
       var lock = false;
       form.addEventListener('submit', function (ev) {
         ev.preventDefault();
@@ -2404,7 +2244,6 @@
           if (secret) {
             toast('비밀글을 남겼어요. 오너만 볼 수 있어요.');
           } else {
-            /* 바로 목록 맨 위에 보여주기 (시트에는 몇 분 뒤 반영) */
             var empty = listBox.querySelector('.gs-empty');
             if (empty) empty.remove();
             listBox.insertBefore(card({ name: name, message: msg, time: '방금' }, true), listBox.firstChild);
@@ -2414,14 +2253,11 @@
           toast('보내지 못했어요. 잠시 뒤 다시 시도해 주세요.');
         }).then(function () {
           form.classList.remove('is-sending');
-          setTimeout(function () { lock = false; }, 3000);   /* 연속 등록 방지 */
+          setTimeout(function () { lock = false; }, 3000);
         });
       });
     }
 
-    /* ---------- Firebase (Firestore) 방명록 ----------
-       공개글은 누구나 읽어요. 비밀글은 비밀번호로 잠근 글(lock)만 공개 목록에 올라가고,
-       원문과 비밀번호는 secret: true 글에 따로 저장돼 보안 규칙으로 오너만 읽어요. */
     function buildFirebase() {
       var FB = G.firebase || {}, cfg = FB.config || {};
       var COL = FB.collection || 'guests';
@@ -2467,7 +2303,6 @@
         return;
       }
 
-      /* Firebase 는 처음 필요할 때 한 번만 불러와요 */
       var conn = null;
       function db() {
         if (!conn) conn = Promise.all([import(BASE + 'firebase-app.js'), import(BASE + 'firebase-firestore.js')])
@@ -2596,13 +2431,11 @@
       });
     }
 
-    /* 구글 시트 시간 "2026. 10. 8 오후 5:56:01" → "2026. 10. 8 오후 5:56" */
     function shortTime(t) {
       t = (t || '').trim();
       return t.replace(/(\d{1,2}:\d{2}):\d{2}$/, '$1');
     }
 
-    /* CSV 읽기 (따옴표, 줄바꿈 포함 글도 처리) */
     function parseCSV(text) {
       var rows = [], row = [], cell = '', q = false;
       for (var i = 0; i < text.length; i++) {
@@ -2626,7 +2459,6 @@
   })();
   </script>
 
-  <!-- ==================== Works (추가 화면) ==================== -->
   <script>
   (function () {
     var D = window.SITE || {};
@@ -2639,7 +2471,6 @@
     }
     var ARROW = '<svg viewBox="0 0 24 24"><path d="M8 16L16 8M9 8h7v7"/></svg>';
 
-    /* 왼쪽 카드 : 안내 + 링크 버튼 */
     function fillLeft(prefix, C, fallback) {
       $(prefix + 'Title').textContent = C.title || fallback;
       $(prefix + 'Sub').textContent = C.subtitle || '';
@@ -2662,7 +2493,6 @@
       box.hidden = !box.children.length;
     }
 
-    /* 탭 전환 (공통) */
     function tabs(navId, panelId, bodyId, list, render) {
       var cur = -1, timer = null;
       var nav = $(navId), body = $(bodyId), panel = $(panelId);
@@ -2687,7 +2517,6 @@
       if (list.length) show(0);
     }
 
-    /* 이미지 갤러리 (누르면 크게 보기) */
     function gallery(sec) {
       var g = el('div', 'pf-gallery');
       g.style.setProperty('--cols', sec.columns || 3);
@@ -2707,7 +2536,6 @@
       return g;
     }
 
-    /* 섹션 (제목 + 표 + 글 + 갤러리) */
     function sections(list, body) {
       (list || []).forEach(function (sec, i) {
         var s = el('section', 'pf-sec');
@@ -2729,14 +2557,13 @@
       });
     }
 
-    /* ---------- Works : 카드 목록 ---------- */
     var W = D.works || {};
     var WT = document.querySelector('.page[data-page="works"]');
     THEME.apply(WT, THEME.base('owner'));
     fillLeft('wk', W, 'Works');
     PAGES.works = function () { document.title = (W.title || 'Works') + ' | ' + (D.title || ''); };
 
-    var sortMode = W.sort === 'old' ? 'old' : 'new';   /* 기본 : 최신순 */
+    var sortMode = W.sort === 'old' ? 'old' : 'new';
     function workCard(w, i, tags, onTag) {
       var a = el(w.url ? 'a' : 'div', 'wk-card');
       if (w.url) { a.href = w.url; a.target = '_blank'; a.rel = 'noopener'; }
@@ -2748,7 +2575,7 @@
       var tx = el('span', 'wk-text');
       tx.appendChild(el('strong', 'wk-name', w.name || ''));
       if (w.desc) tx.appendChild(el('span', 'wk-desc', w.desc));
-      if (w.date) {   /* 썸네일 왼쪽 아래 : yy.mm.dd */
+      if (w.date) {
         var dm = String(w.date).match(/^(\d{2})?(\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
         var dt = dm ? dm[2] + '.' + ('0' + dm[3]).slice(-2) + '.' + ('0' + dm[4]).slice(-2) : w.date;
         th.appendChild(el('span', 'wk-date', dt));
@@ -2798,7 +2625,7 @@
           .map(function (x, i) { return { w: x.w, tags: x.tags, i: i }; });
         list.sort(function (a, b) {
           var da = a.w.date || '', db = b.w.date || '';
-          if (da === db) return sortMode === 'old' ? a.i - b.i : b.i - a.i;   /* 날짜가 같으면 적은 순서 기준 */
+          if (da === db) return sortMode === 'old' ? a.i - b.i : b.i - a.i;
           return sortMode === 'old' ? (da < db ? -1 : 1) : (da < db ? 1 : -1);
         });
         list.forEach(function (x, i) { grid.appendChild(workCard(x.w, i, x.tags, setTag)); });
@@ -3107,7 +2934,6 @@
   })();
   </script>
 
-  <!-- 관리자 편집기 (#admin) : 필요할 때만 admin.js 를 불러와요 -->
   <script>
   (function () {
     window.PAGES.admin = function () {
@@ -3120,11 +2946,6 @@
   })();
   </script>
 
-  <!-- ======================================================
-       화면 전환 (주소 # 뒤를 보고 해당 화면만 보여줘요)
-       #  → 메인홈     #oc → Oc 목록     #oc/char1 → 캐릭터 프로필
-       #pair → Pair 목록     #pair/pair1 → 페어 화면     #owner     #guest
-       ====================================================== -->
   <script>
   (function () {
     var pages = document.querySelectorAll('.page');
@@ -3134,7 +2955,7 @@
       if (!document.querySelector('.page[data-page="' + name + '"]')) name = 'home';
       LB.close();
       var vp = document.querySelector('.viewport');
-      if (vp) vp.scrollTop = 0;                     /* 모바일 : 화면을 바꾸면 맨 위로 */
+      if (vp) vp.scrollTop = 0;
       for (var i = 0; i < pages.length; i++) {
         var p = pages[i], on = p.getAttribute('data-page') === name;
         if (on && p.hidden) {
@@ -3151,17 +2972,12 @@
   })();
   </script>
 
-  <!-- ======================================================
-       뮤직 플레이어 (모든 페이지 공통)
-       ※ 화면(메뉴)을 옮겨도 페이지가 새로 열리지 않아서 음악이 끊기지 않아요.
-       ====================================================== -->
   <script>
   (function () {
     var D = window.SITE || {};
     var M = D.music || {};
     if (M.enable === false) return;
 
-    /* 플레이어 색 (data.js ② colors → player) */
     var C = D.colors || {}, P = C.player || {};
     var vars = {
       '--point': C.point || D.color,
@@ -3173,7 +2989,7 @@
     for (var k in vars) { if (vars[k]) document.documentElement.style.setProperty(k, vars[k]); else delete vars[k]; }
 
     var tracks = (M.list || []).filter(function (t) {
-      return t && t.file && !/youtu\.?be/i.test(t.file);   /* 유튜브 주소는 제외 */
+      return t && t.file && !/youtu\.?be/i.test(t.file);
     }).map(function (t) {
       return {
         title:  t.title  || 'Untitled',
@@ -3183,14 +2999,12 @@
       };
     });
 
-    /* 저장 공간 (막혀 있는 브라우저도 있어서 안전하게) */
     function load(store, key) { try { return JSON.parse(window[store].getItem(key) || 'null'); } catch (e) { return null; } }
     function save(store, key, v) { try { window[store].setItem(key, JSON.stringify(v)); } catch (e) {} }
     function popupAlive() {
       try { return Date.now() - (+window.localStorage.getItem('mp-popup') || 0) < 2500; } catch (e) { return false; }
     }
 
-    /* 이전 페이지에서 듣던 상태 이어받기 */
     var st = load('sessionStorage', 'mp-state') || {};
     var sameList = st.count === tracks.length;
 
@@ -3207,7 +3021,6 @@
       onPopout: openPopup
     });
 
-    /* 접힘 / 옮겨 둔 위치 이어받기 */
     if (st.folded || (st.folded == null && window.innerWidth <= (D.mobileWidth || 820))) dock.classList.add('is-folded');
     if (st.left != null && st.top != null) {
       dock.style.left = Math.min(st.left, window.innerWidth - 60) + 'px';
@@ -3215,7 +3028,6 @@
       dock.style.bottom = 'auto';
     }
 
-    /* 페이지를 떠날 때 지금 상태 저장 */
     function keep() {
       var s = player.state();
       var r = dock.style.top ? dock.getBoundingClientRect() : null;
@@ -3229,7 +3041,6 @@
     window.addEventListener('pagehide', keep);
     window.addEventListener('beforeunload', keep);
 
-    /* 새 창 플레이어가 켜져 있으면 이 페이지 플레이어는 숨김 → 창을 닫으면 다시 나타남 */
     function syncPopup() {
       var alive = (popWin && !popWin.closed) || popupAlive();
       if (alive && dock.style.display !== 'none') { player.pause(); dock.style.display = 'none'; }
@@ -3262,7 +3073,6 @@
       syncPopup();
     }
 
-    /* ---------- 플레이어 본체 (본 화면 / 새 창 공용) ---------- */
     function MusicPlayer(root, cfg) {
       var doc = root.ownerDocument, win = doc.defaultView;
       var list = cfg.list || [];
@@ -3316,12 +3126,11 @@
       function fmt(s) { s = Math.floor(s || 0); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
       function fill(r) { r.style.setProperty('--p', ((r.value - r.min) / ((r.max - r.min) || 1) * 100) + '%'); }
 
-      /* 드래그로 위치 이동 (본 화면에서만) */
       if (!cfg.popup) {
         var head = $('.mp-head'), dx = 0, dy = 0, drag = false;
         head.addEventListener('pointerdown', function (e) {
           if (e.target.closest('button')) return;
-          if (doc.documentElement.classList.contains('is-mobile')) return;   /* 모바일은 고정 */
+          if (doc.documentElement.classList.contains('is-mobile')) return;
           var r = root.getBoundingClientRect();
           dx = e.clientX - r.left; dy = e.clientY - r.top; drag = true;
           root.style.left = r.left + 'px'; root.style.top = r.top + 'px'; root.style.bottom = 'auto';
@@ -3338,7 +3147,6 @@
 
       elVol.value = audio.volume; fill(elVol);
 
-      /* 음원이 없을 때 */
       if (!list.length) {
         root.classList.add('is-empty');
         elTitle.textContent = '음원 파일을 넣어 주세요';
@@ -3395,14 +3203,12 @@
 
       load(idx, false);
 
-      /* 새 창 플레이어 : 살아 있다는 표시를 계속 남겨서, 다른 페이지 플레이어가 겹쳐 재생되지 않게 */
       if (cfg.popup) {
         var beat = function () { try { win.localStorage.setItem('mp-popup', String(Date.now())); } catch (e) {} };
         beat(); win.setInterval(beat, 1000);
         win.addEventListener('pagehide', function () { try { win.localStorage.removeItem('mp-popup'); } catch (e) {} });
       }
 
-      /* 자동 재생 : 브라우저가 막으면 화면을 처음 클릭할 때 재생 */
       if (cfg.autoplay && list.length) {
         var p = audio.play();
         if (p && p.catch) p.catch(function () {

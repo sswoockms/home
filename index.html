@@ -254,6 +254,22 @@
                 </div>
 
               </section>
+
+              <section class="ow-pl" id="owPl">
+                <header class="plv-head">
+                  <a class="oc-home" href="#owner">
+                    <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>OWNER
+                  </a>
+                  <h1 class="oc-title" id="plTitle"></h1>
+                  <p class="oc-sub" id="plSub"></p>
+                </header>
+                <div class="plv-bar">
+                  <nav class="plv-chips" id="plStatus"></nav>
+                  <nav class="plv-chips" id="plRule"></nav>
+                  <input class="plv-search" id="plSearch" type="search" placeholder="제목 · 참여자 검색" aria-label="검색">
+                </div>
+                <div class="plv-panel" id="plPanel"></div>
+              </section>
     
       </section>
 
@@ -1897,10 +1913,105 @@
     var P = OW.profile || {};
     THEME.apply(document.querySelector('.page[data-page="owner"]'), THEME.base('owner'));
     window.addEventListener('resize', function () { if (APP.page === 'owner') fitBanners(); });
-    PAGES.owner = function () {
-      document.title = (OW.title || 'Owner') + ' | ' + (D.title || '');
+    var PL = OW.playlist, plReady = false;
+    PAGES.owner = function (sub) {
+      var on = !!PL && sub === 'playlist';
+      document.querySelector('.page[data-page="owner"]').classList.toggle('is-pl', on);
+      if (on && !plReady) { plReady = true; buildPlaylist(); }
+      document.title = (on ? (PL.title || 'Playlist') : (OW.title || 'Owner')) + ' | ' + (D.title || '');
       setTimeout(fitBanners, 30);              /* 화면에 나타난 뒤 배너 크기 다시 맞추기 */
     };
+
+    function buildPlaylist() {
+      var STATUS = ['예정', '진행', '완주', '하차'];
+      var COLS = [['rule', '룰'], ['title', '제목'], ['note', '비고'], ['count', '인원'], ['role', '유형'], ['status', '상태'], ['date', '날짜']];
+      var rows = (PL.list || []).filter(function (x) { return x && x.title; });
+      var pick = { status: '', rule: '' }, word = '', sortKey = '', sortDir = 1, opened = [];
+      $('plTitle').textContent = PL.title || 'Playlist';
+      $('plSub').textContent = PL.subtitle || '';
+
+      function rank(v) { var i = STATUS.indexOf(v); return i < 0 ? STATUS.length : i; }
+      function chips(host, key, all) {
+        var names = [];
+        rows.forEach(function (x) { if (x[key] && names.indexOf(x[key]) < 0) names.push(x[key]); });
+        if (key === 'status') names.sort(function (a, b) { return rank(a) - rank(b); });
+        [''].concat(names).forEach(function (n) {
+          var b = el('button', 'pr-nav-btn plv-chip', n || all);
+          b.appendChild(el('i', '', n ? rows.filter(function (x) { return x[key] === n; }).length : rows.length));
+          b.dataset.v = n;
+          b.onclick = function () { pick[key] = n; draw(); };
+          host.appendChild(b);
+        });
+        host.hidden = names.length < 2;
+      }
+      chips($('plStatus'), 'status', '전체');
+      chips($('plRule'), 'rule', '모든 룰');
+      $('plSearch').oninput = function () { word = this.value.trim().toLowerCase(); draw(); };
+
+      function draw() {
+        ['plStatus', 'plRule'].forEach(function (id) {
+          var key = id === 'plStatus' ? 'status' : 'rule';
+          [].forEach.call($(id).children, function (b) { b.classList.toggle('is-active', b.dataset.v === pick[key]); });
+        });
+        var list = rows.filter(function (x) {
+          if (pick.status && x.status !== pick.status) return false;
+          if (pick.rule && x.rule !== pick.rule) return false;
+          return !word || [x.title, x.people, x.note, x.memo].join(' ').toLowerCase().indexOf(word) >= 0;
+        });
+        if (sortKey) list.sort(function (a, b) {
+          var d = sortKey === 'status' ? rank(a.status) - rank(b.status)
+            : String(a[sortKey] || '').localeCompare(String(b[sortKey] || ''), 'ko', { numeric: true });
+          return d * sortDir;
+        });
+        var panel = $('plPanel');
+        panel.innerHTML = '';
+        if (!list.length) { panel.appendChild(el('p', 'pf-gal-empty', rows.length ? '조건에 맞는 세션이 없어요' : '세션을 넣어 주세요')); return; }
+        var table = el('table', 'plv-table'), head = el('tr');
+        COLS.forEach(function (c) {
+          var th = el('th'), b = el('button', sortKey === c[0] ? 'is-on' : '', c[1] + (sortKey === c[0] ? (sortDir > 0 ? ' ▲' : ' ▼') : ''));
+          b.onclick = function () {
+            if (sortKey !== c[0]) { sortKey = c[0]; sortDir = 1; }
+            else if (sortDir > 0) sortDir = -1;
+            else sortKey = '';
+            draw();
+          };
+          th.appendChild(b); head.appendChild(th);
+        });
+        var thead = el('thead'), tbody = el('tbody');
+        thead.appendChild(head); table.appendChild(thead);
+        list.forEach(function (x) {
+          var tr = el('tr', 'plv-row'), more = x.people || x.memo;
+          COLS.forEach(function (c) {
+            var td = el('td', 'plv-' + c[0]);
+            if (c[0] === 'status' && x.status) {
+              var s = el('span', 'plv-st is-s' + rank(x.status), x.status);
+              td.appendChild(s);
+            } else td.textContent = x[c[0]] || '-';
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+          if (!more) return;
+          tr.classList.add('has-more');
+          var ex = el('tr', 'plv-more'), cell = el('td');
+          cell.colSpan = COLS.length;
+          if (x.people) { var p = el('p'); p.appendChild(el('b', '', '참여자')); p.appendChild(el('span', '', x.people)); cell.appendChild(p); }
+          if (x.memo) { var m = el('p'); m.appendChild(el('b', '', '메모')); m.appendChild(el('span', '', x.memo)); cell.appendChild(m); }
+          ex.appendChild(cell);
+          ex.hidden = opened.indexOf(x) < 0;
+          tr.classList.toggle('is-open', !ex.hidden);
+          tr.onclick = function () {
+            var at = opened.indexOf(x);
+            if (at < 0) opened.push(x); else opened.splice(at, 1);
+            ex.hidden = at >= 0;
+            tr.classList.toggle('is-open', at < 0);
+          };
+          tbody.appendChild(ex);
+        });
+        table.appendChild(tbody);
+        panel.appendChild(table);
+      }
+      draw();
+    }
     $('owTitle').textContent = OW.title || 'Owner';
     $('owSub').textContent = OW.subtitle || '';
 
@@ -2063,6 +2174,11 @@
       b.onclick = function () { showTab(i); };
       nav.appendChild(b);
     });
+    if (PL) {
+      var plBtn = el('button', 'pr-nav-btn', PL.title || 'Playlist');
+      plBtn.onclick = function () { location.hash = '#owner/playlist'; };
+      nav.appendChild(plBtn);
+    }
 
     if (tabs.length) showTab(0);
 

@@ -111,7 +111,7 @@
   function previewPane() {
     var base = location.href.split('#')[0].split('?')[0];
     var pane = h('div', { class: 'oha-pv' });
-    var routes = [['', '메인'], ['owner', 'Owner'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['log', 'Log 목록'], ['guest', 'Guest'], ['calendar', 'Calendar']];
+    var routes = [['', '메인'], ['owner', 'Owner'], ['owner/playlist', 'Owner · Playlist'], ['works', 'Works'], ['oc', 'Oc 목록'], ['pair', 'Pair 목록'], ['log', 'Log 목록'], ['guest', 'Guest'], ['calendar', 'Calendar']];
     var oc = (st.draft.oc && st.draft.oc.list) || [], pr = (st.draft.pair && st.draft.pair.list) || [];
     oc.forEach(function (c) { if (c.id) routes.push(['oc/' + c.id, 'Oc · ' + (c.name || c.id)]); });
     pr.forEach(function (p) { if (p.id) routes.push(['pair/' + p.id, 'Pair · ' + (p.name || p.id)]); });
@@ -369,8 +369,10 @@
       id: '', title: '', date: '', system: '', desc: '', image: '', tags: [],
       cast: [{ role: 'GM', name: '', player: '', image: '', oc: '' }, { role: 'PL', name: '', player: '', image: '', oc: '' }],
       raw: '' } }];
+    if (key === 'list' && area === 'owner') return [{ name: '새 세션', desc: '룰 · 제목 · 유형 · 상태', value: {
+      title: '', rule: '', role: 'PL', note: '', count: '', status: '완주', date: '', people: '', memo: '' } }];
     if (key === 'cast') {
-      var mine = ((st.draft.oc && st.draft.oc.list) || []).map(function (c) {
+      var mine =((st.draft.oc && st.draft.oc.list) || []).map(function (c) {
         return { name: '내 OC : ' + (c.name || c.id), desc: '굵은 테두리 + 누르면 OC 화면으로', value: { role: 'PL', name: '', player: '', image: '', oc: c.id } };
       });
       return mine.concat([
@@ -447,7 +449,8 @@
     pairitem: { tags: [] },
     logitem: { image: '', tags: [], cast: [], embed: '', speakers: { '캐릭터 이름': { image: '' } } }
   };
-  Object.assign(LABEL, { auto: '관계 자동 목록', timelines: '타임라인', logs: 'TRPG 로그', system: '룰', gm: 'GM',
+  Object.assign(LABEL, { playlist: 'Playlist (플레이한 세션)', rule: '룰', note: '비고 (PC2 · 헌정 등)', count: '인원 (4인 · 타이만 등)',
+    people: '참여자', memo: '메모', auto: '관계 자동 목록', timelines: '타임라인', logs: 'TRPG 로그', system: '룰', gm: 'GM',
     players: '참가자', embed: '로그 파일(html)', raw: '로그 글', speakers: '말하는 사람', side: '말풍선 위치',
     script: '뒤 필기체 글자', stamp: '도장', label: '버튼 이름', scriptFont: '필기체',
     listGrayscale: '목록 이미지 흑백', fadeTime: '나타나는 시간(초)', bgStanding: '뒤에 스탠딩 깔기',
@@ -531,6 +534,7 @@
     var p = st.path || [], list = st.draft[st.tab] && st.draft[st.tab].list;
     if ((st.tab === 'oc' || st.tab === 'pair' || st.tab === 'log') && p[0] === 'list' && typeof p[1] === 'number' && list && list[p[1]] && list[p[1]].id)
       return st.tab + '/' + list[p[1]].id;
+    if (st.tab === 'owner' && p[0] === 'playlist') return 'owner/playlist';
     return TAB_ROUTE[st.tab] || '';
   }
   function crumbList(path) {

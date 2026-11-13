@@ -901,6 +901,11 @@ window.SITE = {
           ]
         }
       ]
+    },
+    "playlist": {
+      "title": "Playlist",
+      "subtitle": "Played Sessions",
+      "list": []
     }
   },
   "guest": {

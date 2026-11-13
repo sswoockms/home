@@ -2975,3 +2975,66 @@ a.lgp-member:hover { transform: translateY(-2px); box-shadow: 0 10px 24px color-
 html.is-mobile .cl-cell { min-height: 54px; padding: 6px 4px; align-items: center; }
 html.is-mobile .cl-ev, html.is-mobile .cl-more { display: none; }
 html.is-mobile .lgp-frame { height: 70vh; }
+
+/* ---------- Owner : Playlist ---------- */
+.page[data-page="owner"] { overflow: hidden; }
+.ow { transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s; }
+.page.is-pl .ow { transform: translateX(-100%); visibility: hidden; transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s 0.7s; }
+.ow-pl {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: 90px 110px 50px;
+  transform: translateX(100%); visibility: hidden;
+  transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s 0.7s;
+}
+.page.is-pl .ow-pl { transform: none; visibility: visible; transition: transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s; }
+.plv-head .oc-title { margin-top: 26px; }
+.plv-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin: 28px 0 18px; }
+.plv-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.plv-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 13px; }
+.plv-chip i { font-style: normal; font-size: 11px; font-variant-numeric: tabular-nums; opacity: 0.65; }
+.plv-search {
+  margin-left: auto; width: 240px; padding: 10px 18px; border-radius: 999px;
+  border: 1px solid var(--c-line); background: var(--c-card); color: var(--c-text);
+  font: 500 14px var(--font); outline: none;
+}
+.plv-search:focus { border-color: var(--c-accent); }
+.plv-panel {
+  flex: 1; min-height: 0; padding: 0 34px 24px; border-radius: 36px;
+  background: color-mix(in srgb, var(--c-card) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--point) 8%, var(--c-card));
+  box-shadow: 0 20px 50px color-mix(in srgb, var(--point) 8%, transparent);
+  overflow: auto; scrollbar-width: thin; scrollbar-color: var(--c-line) transparent;
+}
+.plv-panel .pf-gal-empty { padding-top: 60px; }
+.plv-table { width: 100%; border-collapse: collapse; font-size: 14px; color: var(--c-text); }
+.plv-table th { position: sticky; top: 0; z-index: 1; padding: 22px 12px 12px; background: var(--c-card); border-bottom: 1px solid var(--c-line); }
+.plv-table th button {
+  padding: 0; border: 0; background: none; cursor: pointer; white-space: nowrap;
+  font: 700 12px var(--font); letter-spacing: 0.14em; color: var(--c-sub);
+}
+.plv-table th button:hover, .plv-table th button.is-on { color: var(--c-title); }
+.plv-table td { padding: 13px 12px; text-align: center; border-bottom: 1px dashed var(--c-line); }
+.plv-table td.plv-title { text-align: left; font-weight: 700; color: var(--c-title); }
+.plv-table td.plv-date { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--c-sub); }
+.plv-row.has-more { cursor: pointer; }
+.plv-row.has-more .plv-title::after { content: " ▾"; font-size: 11px; color: var(--c-sub); }
+.plv-row.is-open .plv-title::after { content: " ▴"; }
+.plv-row:hover td { background: var(--c-soft); }
+.plv-st { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; border: 1px solid var(--c-line); color: var(--c-sub); }
+.plv-st.is-s1 { border-color: var(--c-accent); color: var(--c-accent); }
+.plv-st.is-s2 { border-color: var(--c-accent); background: var(--c-accent); color: var(--c-on-accent); }
+.plv-st.is-s3 { text-decoration: line-through; opacity: 0.7; }
+.plv-more td { padding: 14px 20px 18px; text-align: left; background: var(--c-soft); }
+.plv-more p { display: flex; gap: 14px; margin: 4px 0; line-height: 1.7; white-space: pre-line; }
+.plv-more b { flex: none; min-width: 52px; font-size: 12px; letter-spacing: 0.1em; color: var(--c-sub); }
+
+html.is-mobile .page.is-pl .ow { display: none; }
+html.is-mobile .ow-pl { display: none; position: static; transform: none; visibility: visible; padding: 40px 14px 140px; }
+html.is-mobile .page.is-pl .ow-pl { display: flex; }
+html.is-mobile .plv-search { margin-left: 0; width: 100%; }
+html.is-mobile .plv-panel { flex: none; padding: 0 12px 16px; border-radius: 24px; }
+html.is-mobile .plv-table { font-size: 13px; }
+html.is-mobile .plv-table .plv-note, html.is-mobile .plv-table .plv-count,
+html.is-mobile .plv-table th:nth-child(3), html.is-mobile .plv-table th:nth-child(4) { display: none; }
+html.is-mobile .plv-table th, html.is-mobile .plv-table td { padding-left: 6px; padding-right: 6px; }

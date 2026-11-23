@@ -329,7 +329,7 @@ window.SITE = {
         "standing": [
           {
             "label": "기본",
-            "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792071001096-260910_1___.png?alt=media&token=5b640dbb-3b9e-44ea-8efe-ddd08c7164da",
+            "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1795399148856-_______2.png?alt=media&token=63cb4e76-cebe-4a5a-beae-2e2133f50aba",
             "thumb": ""
           }
         ],
@@ -594,9 +594,13 @@ window.SITE = {
         "standings": [
           {
             "label": "기본",
-            "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792833539709-__1401_20261023185008.png?alt=media&token=b5642bb0-b9cf-486d-bb3e-e445c6d56261",
+            "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1795399246896-_______2.png?alt=media&token=794b2b63-c874-4057-b652-4bd5a03ecb36",
             "size": 0,
             "script": ""
+          },
+          {
+            "label": "교복",
+            "image": "https://firebasestorage.googleapis.com/v0/b/myhome-8854d.firebasestorage.app/o/uploads%2F1792833539709-__1401_20261023185008.png?alt=media&token=b5642bb0-b9cf-486d-bb3e-e445c6d56261"
           },
           {
             "label": "제복",
@@ -608,7 +612,7 @@ window.SITE = {
         "desc": " ",
         "stamp": {
           "title": "K/SHU",
-          "text": "thank you\nfor visiting"
+          "text": "I can't be your hero"
         },
         "date": {
           "big": "01",
